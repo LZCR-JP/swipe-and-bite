@@ -1,59 +1,19 @@
 <div class="container mt-4">
   <h1>Create a Nomikai</h1>
 
-  <% if @nomikai.errors.any? %>
-    <div class="alert alert-danger">
-      <% @nomikai.errors.full_messages.each do |message| %>
-        <p><%= message %></p>
-      <% end %>
-    </div>
+  <%= simple_form_for @nomikai do |f| %>
+    <%= f.input :name, label: "Nomikai name", required: true %>
+
+    <%= f.input :area, label: "Location", placeholder: "e.g. Shibuya", required: true %>
+
+    <%= f.input :event_date, as: :datetime, html5: true, label: "Date & time", required: true %>
+
+    <%= f.input :group_size, label: "Number of people", input_html: { min: 1 }, required: true %>
+
+    <%= f.input :budget_per_person, label: "Budget per person (JPY)", input_html: { min: 1 }, required: true %>
+
+    <%= f.button :submit, "Create Nomikai", class: "btn btn-primary" %>
   <% end %>
 
-  <%= form_with model: @nomikai do |f| %>
-
-    <div class="mb-3">
-      <%= f.label :name, "Nomikai Name" %>
-      <%= f.text_field :name,
-                       class: "form-control",
-                       required: true %>
-    </div>
-
-    <div class="mb-3">
-      <%= f.label :area, "Location" %>
-      <%= f.text_field :area,
-                       placeholder: "e.g. Shibuya",
-                       class: "form-control",
-                       required: true %>
-    </div>
-
-    <div class="mb-3">
-      <%= f.label :event_date, "Date & Time" %>
-      <%= f.datetime_local_field :event_date,
-                                 class: "form-control",
-                                 required: true %>
-    </div>
-
-    <div class="mb-3">
-      <%= f.label :group_size, "Number of People" %>
-      <%= f.number_field :group_size,
-                         min: 1,
-                         class: "form-control",
-                         required: true %>
-    </div>
-
-    <div class="mb-3">
-      <%= f.label :budget_per_person, "Budget per Person (JPY)" %>
-      <%= f.number_field :budget_per_person,
-                         min: 1,
-                         class: "form-control",
-                         required: true %>
-    </div>
-
-    <%= f.submit "Create Nomikai",
-                 class: "btn btn-primary" %>
-
-  <% end %>
-
-  <%= link_to "Back", nomikais_path,
-              class: "btn btn-outline-secondary mt-3" %>
+  <%= link_to "Back", nomikais_path, class: "btn btn-outline-secondary mt-3" %>
 </div>
