@@ -1,4 +1,7 @@
 class SwipeProcessor
+  class InvalidChoice < StandardError; end
+  class ClosedNomikai < StandardError; end
+
   def initialize(participant:, nomikai:, card_id:, liked:)
     @participant = participant
     @nomikai = nomikai
@@ -7,19 +10,34 @@ class SwipeProcessor
   end
 
   def call
-    card = @nomikai.nomikai_vibe_cards.find(@card_id)
+    @nomikai.with_lock do
+      raise ClosedNomikai unless @nomikai.status == "open"
 
-    swipe = @participant.swipes.find_or_initialize_by(
-      nomikai_vibe_card: card
-    )
+      card = @nomikai.nomikai_vibe_cards.find(@card_id)
 
-    swipe.liked = @liked == "true"
-    swipe.save!
+      swipe = @participant.swipes.find_or_initialize_by(
+        nomikai_vibe_card: card
+      )
 
-    complete_participant_if_finished
+      swipe.liked = liked_value
+      swipe.save!
+
+      complete_participant_if_finished
+    end
   end
 
   private
+
+  def liked_value
+    case @liked.to_s
+    when "true"
+      true
+    when "false"
+      false
+    else
+      raise InvalidChoice
+    end
+  end
 
   def complete_participant_if_finished
     return unless @participant.swipes.count ==

@@ -3,19 +3,26 @@ Rails.application.routes.draw do
 
   devise_for :users
   root to: "pages#home"
+  get "about", to: "pages#about", as: :about
 
   get "restaurant_photo", to: "restaurant_photos#show", as: :restaurant_photo
 
   # Host side (logged in)
   resources :nomikais do
+
     member do
       get :progress
       patch :close
-      get :recommendations, action: :recommendations_landing, as: :recommendations_landing
+
+      get :recommendations,
+          action: :recommendations_landing,
+          as: :recommendations_landing
+
       post :recommendations
+
       patch "candidates/:candidate_id/select",
-      action: :select_candidate,
-      as: :select_candidate
+            action: :select_candidate,
+            as: :select_candidate
     end
   end
 

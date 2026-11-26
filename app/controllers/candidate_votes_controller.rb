@@ -3,30 +3,18 @@ class CandidateVotesController < ApplicationController
   before_action :ensure_open
 
   def create
-    approved_value = params[:approved].to_s
-
-    return head :unprocessable_entity unless %w[true false].include?(approved_value)
-
-    candidate = @nomikai.candidates.find_by!(
-      id: params[:candidate_id],
-      selected: true
+    recorder = CandidateVoteRecorder.new(
+      participant: @participant,
+      candidate_id: params[:candidate_id],
+      approved: params[:approved]
     )
-
-    vote = @participant.candidate_votes.find_or_initialize_by(
-      candidate: candidate
-    )
-    vote.update!(approved: approved_value == "true")
-
-    notice =
-      if vote.approved?
-        "You approved the selected restaurant."
-      else
-        "You asked for another option."
-      end
+    recorder.call
 
     redirect_to participant_path(@participant.token),
                 status: :see_other,
-                notice: notice
+                notice: recorder.notice
+  rescue CandidateVoteRecorder::InvalidApproval
+    head :unprocessable_entity
   end
 
   private

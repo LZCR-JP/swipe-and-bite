@@ -1,0 +1,55 @@
+<% content_for :title, "About | Swipe & Bite" %>
+
+<main class="about-page">
+  <section class="about-hero">
+    <p class="about-eyebrow">ABOUT SWIPE &amp; BITE</p>
+    <h1>Find a place your group will love.</h1>
+    <p class="about-intro">
+      Planning lunch, dinner, or another meal out? Swipe &amp; Bite helps your
+      group discover restaurant options and choose one everyone can agree on.
+    </p>
+
+    <%= link_to "Plan a group meal", new_nomikai_path, class: "about-cta" %>
+  </section>
+
+  <section class="about-how-it-works" aria-labelledby="about-how-heading">
+    <p class="about-eyebrow">HOW IT WORKS</p>
+    <h2 id="about-how-heading">A simpler way to choose together.</h2>
+
+    <div class="about-steps">
+      <article class="about-step">
+        <span class="about-step-number">01</span>
+        <h3>Create an event</h3>
+        <p>
+          Set the time, location, group size, and budget for your next meal out.
+        </p>
+      </article>
+
+      <article class="about-step">
+        <span class="about-step-number">02</span>
+        <h3>Invite your group</h3>
+        <p>
+          Share the event link so everyone can join and add their preferences.
+        </p>
+      </article>
+
+      <article class="about-step">
+        <span class="about-step-number">03</span>
+        <h3>Find a place together</h3>
+        <p>
+          Swipe through restaurant ideas and see which options work for your group.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="about-purpose">
+    <h2>Less back-and-forth. More time around the table.</h2>
+    <p>
+      Whether it’s lunch with coworkers, dinner with friends, or a weekend meal
+      with family, Swipe &amp; Bite makes it easier to find a restaurant that
+      suits the group.
+    </p>
+  </section>
+</main>
+
