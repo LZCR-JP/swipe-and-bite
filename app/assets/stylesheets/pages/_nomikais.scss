@@ -250,10 +250,10 @@
   }
 
   .dropdown-edit {
-    color: #2563eb;
+    color: $brand-orange-hover;
 
     &:hover {
-      background: #eff6ff;
+      background: $background-soft;
     }
   }
 
