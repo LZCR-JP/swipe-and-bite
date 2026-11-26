@@ -1,6 +1,9 @@
 class Participant < ApplicationRecord
   belongs_to :nomikai
   belongs_to :invitation, optional: true
+  belongs_to :user, optional: true
+
+  DIETARY_RESTRICTIONS = ["Vegetarian", "Vegan", "Halal", "Gluten-free", "Seafood allergy", "Nut allergy"].freeze
   has_many :swipes, dependent: :destroy
   has_many :candidate_votes, dependent: :destroy
 

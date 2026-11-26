@@ -1,52 +1,29 @@
 <div class="container py-5">
-  <div class="participant-join">
-
-    <!-- Branding -->
-    <div class="join-brand">
-      <h2>Swipe <span>&</span> Bite</h2>
-      <p>GOOD FOOD. BETTER TOGETHER.</p>
-    </div>
-
-    <!-- Introduction -->
+  <div class="participant-join quick-join">
     <div class="join-header">
-      <span class="join-label">JOIN YOUR TEAM</span>
-      <h1>Got a join code?</h1>
-      <p>Enter the code your event host shared with you to jump in.</p>
+      <h1>Join a gathering</h1>
+      <p>Enter the 4-digit code from your host.</p>
     </div>
 
     <div class="join-form-card join-code-card">
-      <%= simple_form_for :join, url: join_code_path, method: :post do |f| %>
+      <%= form_with url: join_code_path, method: :post do |f| %>
         <% error = @error || flash[:alert] %>
-
-        <%= f.label :code, "Join code", for: "join_code_input" %>
-        <%= f.input_field :code,
-                          id: "join_code_input",
-                          value: @code,
-                          placeholder: "SWIPE-K7QM2P",
-                          autocomplete: "off",
-                          autocapitalize: "characters",
-                          spellcheck: false,
-                          autofocus: true,
-                          maxlength: 20,
-                          class: ["form-control", "join-code-input", ("is-invalid" if error)].compact.join(" "),
-                          aria: { invalid: error.present?, describedby: ("join_code_error" if error) },
-                          data: { controller: "code-input", action: "input->code-input#format" } %>
-
-        <% if error %>
-          <div id="join_code_error" class="join-code-error">
-            <i class="fa-solid fa-circle-exclamation"></i> <%= error %>
-          </div>
-        <% else %>
-          <small class="join-code-hint">It looks like <strong>SWIPE-</strong> followed by 6 letters and numbers.</small>
+        <%= f.label :code, "Join code", class: "visually-hidden" %>
+        <%= f.text_field :code,
+                         value: @code,
+                         placeholder: "0000",
+                         inputmode: "numeric",
+                         pattern: "[0-9]{4}",
+                         maxlength: 4,
+                         autocomplete: "off",
+                         required: true,
+                         class: ["form-control", "join-code-input", ("is-invalid" if error)].compact.join(" "),
+                         aria: { invalid: error.present?, describedby: ("join_code_error" if error) } %>
+        <% if error.present? %>
+          <p id="join_code_error" class="join-code-error" role="alert"><%= error %></p>
         <% end %>
-
-        <%= f.button :submit, "Find my event", class: "btn-join-event" %>
+        <%= f.submit "Continue", class: "btn-join-event" %>
       <% end %>
     </div>
-
-    <p class="join-footer">
-      Don't have a code? Ask your event host to share one or send you an invite.
-    </p>
-
   </div>
 </div>

@@ -1,197 +1,30 @@
-
-<div class="nomikais-page">
-
-  <%# DASHBOARD HEADER %>
-  <div class="nomikais-header">
-    <div>
-      <h1>My Gatherings</h1>
-      <p>Manage your dining events.</p>
-    </div>
-
-    <%= link_to new_nomikai_path, class: "create-nomikai-btn" do %>
-      <i class="fa-solid fa-plus"></i>
-      Create event
-    <% end %>
-  </div>
-
-  <%# EVENTS SECTION HEADER %>
-  <div class="nomikai-list-header">
-
-    <h2>Event status</h2>
-
-    <div class="nomikai-summary">
-      <span class="summary-total">
-        <%= @nomikais.size %> Total
-      </span>
-
-      <span class="summary-open">
-        <%= @nomikais.count { |n| n.status == "open" } %> Open
-      </span>
-
-      <span class="summary-closed">
-        <%= @nomikais.count { |n| n.status == "closed" } %> Closed
-      </span>
-    </div>
-
-  </div>
-
-  <% if @nomikais.any? %>
-
-    <%# GATHERING CARDS %>
-    <div class="nomikai-grid">
-
-      <% @nomikais.each do |nomikai| %>
-
-        <% participants = nomikai.participants.to_a %>
-        <% completed = participants.count { |p| p.completed_at.present? } %>
-        <% progress = participants.any? ? (completed.to_f / participants.size * 100).round : 0 %>
-
-        <div class="nomikai-card">
-
-          <%# CARD HEADER %>
-          <div class="nomikai-card-top">
-
-            <span class="nomikai-category">TEAM GATHERING</span>
-
-            <div class="nomikai-card-top-actions">
-
-              <span class="nomikai-status <%= nomikai.status %>">
-                <%= nomikai.status.capitalize %>
-              </span>
-
-              <%# ACTION MENU %>
-              <details class="nomikai-actions-menu">
-
-                <summary title="More actions">
-                  <i class="fa-solid fa-ellipsis"></i>
-                </summary>
-
-                <div class="nomikai-dropdown">
-
-                  <%= link_to edit_nomikai_path(nomikai),
-                              class: "dropdown-edit" do %>
-                    <i class="fa-solid fa-pen-to-square"></i>
-                    Edit gathering
-                  <% end %>
-
-                  <%= button_to nomikai_path(nomikai),
-                                method: :delete,
-                                class: "dropdown-delete",
-                                form: {
-                                  data: {
-                                    turbo_confirm: "Are you sure you want to delete this gathering?"
-                                  }
-                                } do %>
-                    <i class="fa-solid fa-trash-can"></i>
-                    Delete gathering
-                  <% end %>
-
-                </div>
-
-              </details>
-
-            </div>
-
-          </div>
-
-          <%# EVENT NAME %>
-          <h3><%= nomikai.name.capitalize %></h3>
-
-          <%# EVENT DETAILS %>
-          <div class="nomikai-details">
-
-            <p>
-              <i class="fa-solid fa-location-dot"></i>
-              <%= nomikai.area %>
-            </p>
-
-            <p>
-              <i class="fa-regular fa-calendar"></i>
-              <%= nomikai.event_date.strftime("%B %d, %Y · %H:%M") %>
-            </p>
-
-            <p>
-              <i class="fa-solid fa-users"></i>
-              <%= participants.size %> joined ·
-              <%= nomikai.group_size %> expected
-            </p>
-
-            <% if nomikai.budget_per_person.present? %>
-              <p>
-                <i class="fa-solid fa-yen-sign"></i>
-                <%= number_with_delimiter(nomikai.budget_per_person) %>
-                / person
-              </p>
-            <% else %>
-              <p>
-                <i class="fa-solid fa-yen-sign"></i>
-                Flexible budget
-              </p>
-            <% end %>
-
-          </div>
-
-          <%# RESPONSE PROGRESS %>
-          <div class="nomikai-progress">
-
-            <div class="progress-label">
-              <span>Responses completed</span>
-              <strong>
-                <%= completed %>/<%= participants.size %>
-              </strong>
-            </div>
-
-            <div class="progress-track">
-              <div
-                class="progress-fill"
-                style="width: <%= progress %>%">
-              </div>
-            </div>
-
-          </div>
-
-          <%# CARD FOOTER %>
-          <div class="nomikai-card-footer">
-
-            <%= link_to nomikai_path(nomikai),
-                        class: "view-nomikai-btn" do %>
-              <i class="fa-solid fa-eye"></i>
-              View Details
-              <i class="fa-solid fa-arrow-right"></i>
-            <% end %>
-
-          </div>
-
-        </div>
-
-      <% end %>
-
-    </div>
-
+<main class="gathering-hub">
+  <header class="gathering-hub__header"><h1>Gatherings</h1></header>
+  <% if @ongoing_gathering %>
+    <%= render "ongoing", gathering: @ongoing_gathering %>
   <% else %>
-
-    <%# EMPTY STATE %>
-    <div class="nomikai-empty-state">
-
-      <div class="empty-icon">
-        <i class="fa-solid fa-utensils"></i>
-      </div>
-
-      <h2>No Dining Events Yet!</h2>
-
-      <p>
-        Your next team dinner starts here.
-        Create your first event and invite your colleagues
-        to find the perfect restaurant together.
-      </p>
-
-      <%= link_to new_nomikai_path, class: "create-nomikai-btn" do %>
-        <i class="fa-solid fa-plus"></i>
-        Create Your First Dining Event
-      <% end %>
-
-    </div>
-
+    <section class="gathering-idle">
+      <span><i class="fa-solid fa-utensils" aria-hidden="true"></i></span>
+      <div><h2>Ready for the next bite?</h2><p>No ongoing gathering.</p></div>
+      <%= link_to new_nomikai_path, aria: { label: "Create a gathering" } do %><i class="fa-solid fa-arrow-right" aria-hidden="true"></i><% end %>
+    </section>
   <% end %>
-
-</div>
+  <section class="gathering-history">
+    <h2>History</h2>
+    <% if @nomikais.any? %>
+      <% @nomikais.each do |gathering| %>
+        <%= link_to nomikai_path(gathering), class: "gathering-history__row" do %>
+          <span class="gathering-history__icon"><i class="fa-solid <%= gathering.meal_period == "lunch" ? "fa-sun" : "fa-moon" %>" aria-hidden="true"></i></span>
+          <span class="gathering-history__details">
+            <strong><%= gathering.name %></strong>
+            <small><%= gathering.area == "Selected on map" ? "Pinned location" : gathering.area %> · <%= gathering.group_size %> people</small>
+            <small><%= l(gathering.matches_found_at.to_date, format: :long) %></small>
+          </span>
+          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+        <% end %>
+      <% end %>
+    <% else %>
+      <p class="gathering-history__empty">No completed gatherings yet.</p>
+    <% end %>
+  </section>
+</main>

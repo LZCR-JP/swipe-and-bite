@@ -1,167 +1,41 @@
-
-<div class="container py-5">
-  <div class="participant-dashboard">
-
-    <!-- Welcome header -->
-    <div class="participant-welcome">
-      <span class="welcome-label">SWIPE & BITE</span>
-      <h1>You're in, <%= @participant.nickname.capitalize %>!</h1>
-      <p>Let's find somewhere delicious.</p>
-    </div>
-
-    <!-- Event card -->
-    <div class="participant-event-card">
-      <div class="event-card-header">
-        <div>
-          <span class="section-label">YOUR EVENT</span>
-          <h2><%= @nomikai.name.capitalize %></h2>
-        </div>
-
-        <span class="event-status <%= @nomikai.status %>">
-          <%= @nomikai.status.capitalize %>
-        </span>
-      </div>
-
-      <div class="event-info-grid">
-        <div class="event-info-item">
-          <i class="fa-solid fa-location-dot"></i>
-          <div>
-            <span>Location</span>
-            <strong><%= @nomikai.area %></strong>
-          </div>
-        </div>
-
-        <div class="event-info-item">
-          <i class="fa-solid fa-calendar"></i>
-          <div>
-            <span>Date & Time</span>
-            <strong><%= @nomikai.event_date.strftime("%b %d, %Y · %H:%M") %></strong>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <% if @selected_candidate.present? %>
-      <% place_id = @selected_candidate.venue.google_place_id %>
-      <% maps_url = "https://www.google.com/maps/search/?api=1&query=restaurant&query_place_id=#{ERB::Util.url_encode(place_id)}" %>
-
-      <section class="participant-event-card participant-selected-restaurant">
-        <div class="selected-restaurant-heading">
-          <div>
-            <span class="section-label">RESTAURANT CHOSEN</span>
-            <h2>Your group’s restaurant is ready</h2>
-            <p>The organizer selected a place for this event.</p>
-          </div>
-
-          <span class="selected-restaurant-badge">Selected</span>
-        </div>
-
-        <%= link_to "Open in Google Maps",
-                    maps_url,
-                    class: "btn-open-selected-restaurant",
-                    target: "_blank",
-                    rel: "noopener noreferrer" %>
-
-        <% if @nomikai.status == "open" %>
-          <p class="vote-prompt">Would this restaurant work for your group?</p>
-
-          <% if @candidate_vote.present? %>
-            <p class="vote-status">
-              Your response:
-              <strong><%= @candidate_vote.approved? ? "Looks good" : "I’d like another option" %></strong>
-            </p>
-          <% end %>
-
-          <div class="participant-vote-actions">
-            <%= button_to "Looks good",
-                          participant_candidate_votes_path(@participant.token),
-                          method: :post,
-                          params: {
-                            candidate_id: @selected_candidate.id,
-                            approved: true
-                          },
-                          class: "btn-vote-approve" %>
-
-            <%= button_to "I’d like another option",
-                          participant_candidate_votes_path(@participant.token),
-                          method: :post,
-                          params: {
-                            candidate_id: @selected_candidate.id,
-                            approved: false
-                          },
-                          class: "btn-vote-another" %>
-          </div>
-        <% else %>
-          <p class="vote-prompt">Voting is closed for this event.</p>
-        <% end %>
-      </section>
-    <% else %>
-      <section class="participant-event-card participant-selected-restaurant">
-        <span class="section-label">RESTAURANT MATCH</span>
-        <p>The selected restaurant will appear here.</p>
-      </section>
-    <% end %>
-
-    <!-- Personal preferences -->
-    <div class="participant-preferences">
-      <div class="preferences-heading">
-        <h2>Your dining preferences</h2>
-      </div>
-
-      <div class="preference-row">
-        <div class="preference-icon">
-          <i class="fa-solid fa-wallet"></i>
-        </div>
-        <div class="preference-content">
-          <span>Maximum budget</span>
-          <strong>¥<%= number_with_delimiter(@participant.budget_max) %></strong>
-        </div>
-      </div>
-
-      <div class="preference-row">
-        <div class="preference-icon">
-          <i class="fa-solid fa-utensils"></i>
-        </div>
-        <div class="preference-content">
-          <span>Dietary restrictions</span>
-          <strong>
-            <%= @participant.restrictions.present? ? @participant.restrictions.join(", ") : "None" %>
-          </strong>
-        </div>
-      </div>
-
-      <div class="preference-row">
-        <div class="preference-icon">
-          <i class="fa-solid fa-wine-glass"></i>
-        </div>
-        <div class="preference-content">
-          <span>Alcohol preference</span>
-          <strong><%= @participant.non_drinker ? "Non-drinker" : "No preference" %></strong>
-        </div>
-      </div>
-    </div>
-
-    <!-- Next step -->
-    <div class="participant-next-step">
-      <% if @nomikai.status == "open" %>
-        <div>
-          <h2>Ready to find your next favorite spot?</h2>
-          <p>Swipe through dining styles to help your team find a restaurant everyone will enjoy.</p>
-        </div>
-
-        <%= link_to participant_swipes_path(@participant.token),
-                    class: "btn-start-swiping" do %>
-          Start Swiping
-          <i class="fa-solid fa-arrow-right"></i>
-        <% end %>
-
+<% if @selected_candidate.present? %>
+  <%= render "legacy_dashboard" %>
+<% else %>
+  <main class="participant-waiting">
+    <header class="participant-waiting__header">
+      <%= link_to join_code_path, aria: { label: "Back to Join" } do %><i class="fa-solid fa-arrow-left" aria-hidden="true"></i><% end %>
+      <span><%= @nomikai.meal_period.capitalize %> gathering</span>
+      <span class="participant-waiting__header-spacer" aria-hidden="true"></span>
+    </header>
+    <section class="participant-waiting__hero">
+      <% if @nomikai.finished? %>
+        <span class="participant-waiting__symbol"><i class="fa-solid fa-utensils" aria-hidden="true"></i></span>
+        <h1>Matches found.</h1><p>Your host has found restaurant matches. Ask them for the results.</p>
+      <% elsif !@nomikai.ongoing? %>
+        <span class="participant-waiting__symbol participant-waiting__symbol--muted"><i class="fa-solid fa-xmark" aria-hidden="true"></i></span>
+        <h1>Gathering cancelled.</h1><p>Your host cancelled this gathering.</p>
+      <% elsif @participant.completed_at.present? %>
+        <span class="participant-waiting__symbol"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+        <h1>You're all set.</h1><p>Your swipes are saved. Waiting for your host to find matches.</p>
       <% else %>
-        <div class="closed-event-message">
-          <h2>This event is closed</h2>
-          <p>Restaurant swiping is no longer available for this event.</p>
-        </div>
+        <span class="participant-waiting__symbol"><i class="fa-regular fa-heart" aria-hidden="true"></i></span>
+        <h1>Ready to swipe?</h1><p>Pick the food and vibes you love.</p>
       <% end %>
-    </div>
-
-  </div>
-</div>
+    </section>
+    <section class="participant-waiting__summary" aria-label="Gathering details">
+      <h2><%= @nomikai.name %></h2>
+      <p><i class="fa-solid fa-location-dot" aria-hidden="true"></i> <%= @nomikai.area == "Selected on map" ? "Pinned location" : @nomikai.area %></p>
+      <p><i class="fa-solid fa-user-group" aria-hidden="true"></i> <%= @nomikai.group_size %> people <% if @nomikai.budget_per_person.present? %> · ¥<%= number_with_delimiter(@nomikai.budget_per_person) %> / person <% end %></p>
+      <% if @nomikai.ongoing? && @participant.completed_at.present? %>
+        <div class="participant-waiting__status"><span class="gathering-status__dot"></span> Waiting for matches</div>
+      <% end %>
+    </section>
+    <% if @nomikai.ongoing? && @participant.completed_at.blank? %>
+      <%= link_to "Continue swiping", participant_swipes_path(@participant.token), class: "participant-waiting__primary" %>
+    <% elsif @nomikai.ongoing? %>
+      <%= link_to "Refresh status", participant_path(@participant.token), class: "participant-waiting__secondary", data: { turbo: false } %>
+    <% else %>
+      <%= link_to "Back to Join", join_code_path, class: "participant-waiting__primary" %>
+    <% end %>
+  </main>
+<% end %>

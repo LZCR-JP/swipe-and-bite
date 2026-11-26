@@ -1,170 +1,100 @@
 <div class="recommendations-screen">
   <main class="recommendations-page">
-    <%= link_to "← Back to event",
-                nomikai_path(@nomikai),
-                class: "recommendations-back-link" %>
+    <%= link_to "← Back to event", nomikai_path(@nomikai), class: "recommendations-back-link" %>
 
     <header class="recommendations-header">
-      <span class="recommendations-eyebrow">SWIPE &amp; BITE · RESTAURANT MATCHES</span>
-      <h1>Restaurants for your event</h1>
-      <p>Places found near <strong><%= @nomikai.area %></strong>.</p>
+      <h1>Your Matches</h1>
+      <p><%= @nomikai.area.to_s.titleize %> · <%= @nomikai.group_size %> people</p>
     </header>
 
-    <% if @preference_summary.present? %>
-      <%= render "search_explanation",
-                 summary: @preference_summary,
-                 search_query: @search_query %>
-    <% end %>
-
     <% if @used_fallback && @places.any? %>
-      <p class="recommendations-fallback">
-        No exact search results were found.
-        Showing results from a broader search.
-      </p>
+      <p class="recommendations-fallback">No exact results. Showing a broader search.</p>
     <% end %>
 
     <% if @places.any? %>
       <div class="recommendation-list">
         <% @places.each do |place| %>
           <article class="recommendation-card">
-            <div class="recommendation-details">
-              <h2><%= place[:name] || "Restaurant" %></h2>
-
-              <% if place[:address].present? %>
-                <p><%= place[:address] %></p>
-              <% end %>
-
-              <% if place[:category].present? %>
-                <p>
-                  <strong>Cuisine:</strong>
-                  <%= place[:category] %>
-                </p>
-              <% end %>
-
-              <% if place[:rating].present? %>
-                <p>
-                  <strong>Rating:</strong>
-                  ★ <%= place[:rating] %> / 5
-
-                  <% if place[:review_count].present? %>
-                    (<%= number_with_delimiter(place[:review_count]) %> reviews)
+            <div class="recommendation-main">
+              <div class="recommendation-details">
+                <h2><%= place[:name].presence || "Restaurant" %></h2>
+                <% start_price = place[:price_range]&.dig("startPrice", "units") %>
+                <% end_price = place[:price_range]&.dig("endPrice", "units") %>
+                <p class="recommendation-price">
+                  <% if start_price.present? && end_price.present? %>
+                    ¥<%= number_with_delimiter(start_price.to_i) %>–<%= number_with_delimiter(end_price.to_i) %>
+                  <% else %>
+                    Price unavailable
                   <% end %>
                 </p>
-              <% end %>
-
-              <% start_price = place[:price_range]&.dig("startPrice", "units") %>
-              <% end_price = place[:price_range]&.dig("endPrice", "units") %>
-
-              <% if start_price.present? && end_price.present? %>
-                <p>
-                  <strong>Estimated price:</strong>
-                  ¥<%= number_with_delimiter(start_price.to_i) %>
-                  –
-                  ¥<%= number_with_delimiter(end_price.to_i) %>
-                </p>
-              <% else %>
-                <p>
-                  <strong>Estimated price:</strong>
-                  Not available
-                </p>
-              <% end %>
-
-              <% if place[:good_for_groups] == true %>
-                <p>✓ Good for groups</p>
-              <% end %>
-
-              <% if place[:reservable] == true %>
-                <p>✓ Accepts reservations</p>
-              <% end %>
-
-              <% if place[:vegetarian_food] == true %>
-                <p>✓ Vegetarian options</p>
-              <% end %>
-
-              <% if place[:outdoor_seating] == true %>
-                <p>✓ Outdoor seating</p>
-              <% end %>
-
-              <% if place[:serves_dinner] == true %>
-                <p>✓ Serves dinner</p>
-              <% end %>
-
-              <% if place[:phone_number].present? %>
-                <p>
-                  <strong>Phone:</strong>
-                  <%= place[:phone_number] %>
-                </p>
-              <% end %>
-
-              <small class="recommendation-disclaimer">
-                Please confirm group capacity, actual dinner prices,
-                availability and dietary requirements directly
-                with the restaurant.
-              </small>
-
-              <% Array(place[:attributions]).each do |attribution| %>
-                <% if attribution["provider"].present? %>
-                  <p class="recommendations-attribution">
-                    <% if attribution["providerUri"].present? %>
-                      <%= link_to attribution["provider"],
-                                  attribution["providerUri"],
-                                  target: "_blank",
-                                  rel: "noopener noreferrer" %>
-                    <% else %>
-                      <%= attribution["provider"] %>
-                    <% end %>
-                  </p>
+                <% if place[:address].present? %>
+                  <p class="recommendation-address"><%= place[:address] %></p>
                 <% end %>
-              <% end %>
+              </div>
+
+              <figure class="recommendation-photo">
+                <% if place[:photo_name].present? %>
+                  <% token = Rails.application.message_verifier(:restaurant_photo).generate(place[:photo_name], expires_in: 15.minutes, purpose: :restaurant_photo) %>
+                  <%= image_tag restaurant_photo_path(token: token), alt: "Photo of #{place[:name]}", loading: "lazy", decoding: "async" %>
+                  <% if place[:photo_attributions].present? %>
+                    <figcaption>
+                      <% place[:photo_attributions].each do |author| %>
+                        <% if author["uri"].present? %>
+                          <%= link_to author["displayName"], author["uri"], target: "_blank", rel: "noopener noreferrer" %>
+                        <% else %>
+                          <%= author["displayName"] %>
+                        <% end %>
+                      <% end %>
+                    </figcaption>
+                  <% end %>
+                <% else %>
+                  <div class="recommendation-no-photo">No photo</div>
+                <% end %>
+              </figure>
             </div>
 
             <div class="recommendation-actions">
               <% if place[:google_maps_uri].present? %>
-                <%= link_to "View on Google Maps",
-                            place[:google_maps_uri],
-                            class: "recommendation-map-link",
-                            target: "_blank",
-                            rel: "noopener noreferrer" %>
+                <%= link_to "Maps", place[:google_maps_uri], class: "recommendation-map-link", target: "_blank", rel: "noopener noreferrer" %>
               <% end %>
-
               <% if place[:website].present? %>
-                <%= link_to "Visit website",
-                            place[:website],
-                            class: "recommendation-map-link",
-                            target: "_blank",
-                            rel: "noopener noreferrer" %>
-              <% end %>
-
-              <% if place[:selected] %>
-                <span class="recommendation-selected">
-                  Selected for this event
-                </span>
-              <% else %>
-                <%= button_to "Choose this restaurant",
-                              select_candidate_nomikai_path(
-                                @nomikai,
-                                candidate_id: place[:candidate_id]
-                              ),
-                              method: :patch,
-                              class: "recommendation-select-button",
-                              form: { class: "recommendation-select-form" } %>
+                <%= link_to "Website", place[:website], class: "recommendation-map-link", target: "_blank", rel: "noopener noreferrer" %>
               <% end %>
             </div>
+
+            <% Array(place[:attributions]).each do |attribution| %>
+              <% if attribution["provider"].present? %>
+                <p class="recommendations-attribution">
+                  <% if attribution["providerUri"].present? %>
+                    <%= link_to attribution["provider"], attribution["providerUri"], target: "_blank", rel: "noopener noreferrer" %>
+                  <% else %>
+                    <%= attribution["provider"] %>
+                  <% end %>
+                </p>
+              <% end %>
+            <% end %>
           </article>
         <% end %>
       </div>
-
-      <p class="recommendations-attribution" translate="no">
-        Google Maps
-      </p>
+      <p class="recommendations-note">Prices are estimates. Confirm dinner prices, seating and dietary requirements with the restaurant.</p>
+      <p class="recommendations-attribution" translate="no">Google Maps</p>
     <% else %>
       <section class="recommendations-empty">
         <h2>No restaurants found</h2>
-        <p>
-          No restaurants were found using the current search conditions.
-          Try reviewing the event area, budget or preferences.
-        </p>
+        <p><%= @reshuffled ? "No more matches on this page." : "Try reviewing the area or budget." %></p>
       </section>
     <% end %>
+
+    <footer class="recommendations-footer">
+      <% if @next_matches_token.present? %>
+        <%= button_to "↻  Find other matches", recommendations_nomikai_path(@nomikai),
+                      method: :post,
+                      params: { continuation: @next_matches_token },
+                      class: "recommendations-reshuffle-button",
+                      form: { class: "recommendations-reshuffle-form", data: { controller: "match-loading", action: "submit->match-loading#start turbo:submit-end->match-loading#reset pageshow@window->match-loading#reset turbo:before-cache@document->match-loading#reset" } } %>
+      <% elsif @places.any? %>
+        <p>No more matches for this search.</p>
+      <% end %>
+    </footer>
   </main>
 </div>

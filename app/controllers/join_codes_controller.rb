@@ -8,7 +8,7 @@ class JoinCodesController < ApplicationController
   end
 
   def create
-    @code = params[:code].to_s.strip
+    @code = (params[:code] || params.dig(:join, :code)).to_s.strip
     nomikai = Nomikai.find_by_join_code(@code)
 
     @error =

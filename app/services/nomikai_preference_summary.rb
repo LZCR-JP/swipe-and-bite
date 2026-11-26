@@ -15,6 +15,7 @@ class NomikaiPreferenceSummary
 
     {
       area: @nomikai.area,
+      meal_period: @nomikai.meal_period,
       event_budget_per_person: @nomikai.budget_per_person,
       effective_budget_per_person: (budgets + [@nomikai.budget_per_person]).compact.min,
       group_size: @nomikai.group_size,

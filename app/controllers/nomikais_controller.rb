@@ -1,41 +1,39 @@
 class NomikaisController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_nomikai, only: %i[show destroy close recommendations recommendations_landing select_candidate]
+  before_action :set_nomikai, only: %i[show destroy close progress recommendations recommendations_landing select_candidate]
 
   def index
-    @nomikais = current_user.nomikais
-                            .includes(:participants)
-                            .order(created_at: :desc)
+    @ongoing_gathering = current_user.nomikais.ongoing.includes(:participants).first
+    @nomikais = current_user.nomikais.finished.order(matches_found_at: :desc)
   end
 
   def show
-    @participants = @nomikai.participants
-    @preference_summary = NomikaiPreferenceSummary.new(@nomikai).call
-    @selected_candidate = @nomikai.candidates
-                                  .includes(:venue)
-                                  .find_by(selected: true)
-    @selected_restaurant_name =
-      if @selected_candidate.present?
-        GooglePlaceDetails.new(
-          @selected_candidate.venue.google_place_id
-        ).call
-      end
-    @candidate_vote_counts =
-      @selected_candidate&.candidate_votes&.group(:approved)&.count || {}
+    if !@nomikai.ongoing? && !@nomikai.finished?
+      redirect_to nomikais_path, status: :see_other
+      return
+    end
+    @participants = @nomikai.participants.order(:created_at)
   end
 
   def new
+    @ongoing_gathering = current_user.nomikais.ongoing.includes(:participants).first
     @nomikai = Nomikai.new
   end
 
   def create
-    @nomikai = current_user.nomikais.build(nomikai_params)
+    current_user.with_lock do
+      @ongoing_gathering = current_user.nomikais.ongoing.first
+      unless @ongoing_gathering
+        @nomikai = current_user.nomikais.build(nomikai_params)
+        VibeCardSelector.new(@nomikai).call if @nomikai.save
+      end
+    end
 
-    if @nomikai.save
-      VibeCardSelector.new(@nomikai).call
-
-      redirect_to nomikai_path(@nomikai),
-                  notice: "Nomikai successfully created!"
+    if @ongoing_gathering
+      redirect_to nomikai_path(@ongoing_gathering), status: :see_other,
+                  alert: "Finish or cancel your ongoing gathering first."
+    elsif @nomikai.persisted?
+      redirect_to nomikai_path(@nomikai), status: :see_other
     else
       render :new, status: :unprocessable_entity
     end
@@ -65,25 +63,68 @@ class NomikaisController < ApplicationController
   end
 
   def close
-    @nomikai.update!(status: "closed")
+    cancelled = false
+    @nomikai.with_lock do
+      if @nomikai.ongoing?
+        @nomikai.update!(status: "closed")
+        cancelled = true
+      end
+    end
 
-    redirect_to nomikai_path(@nomikai),
-                status: :see_other,
-                notice: "Nomikai is now closed."
+    if cancelled
+      redirect_to new_nomikai_path, status: :see_other, notice: "Gathering cancelled."
+    else
+      redirect_to nomikais_path, status: :see_other
+    end
+  end
+
+  def progress
+    expires_now
+    render json: {
+      ongoing: @nomikai.ongoing?,
+      joined: @nomikai.participants.count,
+      completed: @nomikai.participants.where.not(completed_at: nil).count,
+      total: @nomikai.group_size
+    }
   end
 
   def recommendations
-    service = GooglePlacesSearch.new(
-      @nomikai,
-      detailed: true
-    )
+    unless @nomikai.finished? || (@nomikai.ongoing? && @nomikai.participants.where.not(completed_at: nil).exists?)
+      redirect_to nomikai_path(@nomikai), alert: "Complete at least one response before searching.", status: :see_other
+      return
+    end
+    expires_now
+    verifier = Rails.application.message_verifier(:restaurant_matches)
+    purpose = "restaurant_matches:#{current_user.id}:#{@nomikai.id}"
 
+    if params[:continuation].present?
+      continuation = verifier.verified(params[:continuation].to_s, purpose: purpose)
+      unless continuation.is_a?(Hash)
+        redirect_to nomikai_path(@nomikai), alert: "Search expired. Please start a new search.", status: :see_other
+        return
+      end
+    end
+
+    service = GooglePlacesSearch.new(@nomikai, detailed: true, continuation: continuation)
     @places = service.call
+    cancelled = false
+    @nomikai.with_lock do
+      cancelled = !@nomikai.ongoing? && !@nomikai.finished?
+      if !cancelled && @places.any? && !@nomikai.finished?
+        @nomikai.update!(matches_found_at: Time.current, status: "closed")
+      end
+    end
+    if cancelled
+      redirect_to new_nomikai_path, status: :see_other, alert: "This gathering was cancelled."
+      return
+    end
     @used_fallback = service.used_fallback
-    @search_query = service.search_query
-
-    @preference_summary =
-      NomikaiPreferenceSummary.new(@nomikai).call
+    @reshuffled = continuation.present?
+    if service.next_state
+      @next_matches_token = verifier.generate(service.next_state, purpose: purpose, expires_in: 15.minutes)
+    end
+  rescue GooglePlacesSearch::StaleSearch
+    redirect_to nomikai_path(@nomikai), alert: "Search conditions changed. Please start a new search.", status: :see_other
   end
 
   def recommendations_landing
@@ -116,7 +157,7 @@ class NomikaisController < ApplicationController
       :area,
       :latitude,
       :longitude,
-      :event_date,
+      :meal_period,
       :group_size,
       :budget_per_person
     )

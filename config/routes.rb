@@ -5,13 +5,13 @@ Rails.application.routes.draw do
   root to: "pages#home"
   get "about", to: "pages#about", as: :about
 
+  get "restaurant_photo", to: "restaurant_photos#show", as: :restaurant_photo
+
   # Host side (logged in)
   resources :nomikais do
-    resources :invitations, only: %i[create destroy] do
-      post :resend, on: :member
-    end
 
     member do
+      get :progress
       patch :close
 
       get :recommendations,
@@ -40,7 +40,9 @@ Rails.application.routes.draw do
   post "join/:share_token", to: "participants#create"
 
   resources :participants, only: :show, param: :token do
-    resources :swipes, only: %i[index create]
+    resources :swipes, only: %i[index create] do
+      post :finish, on: :collection
+    end
     resources :candidate_votes, only: :create
   end
 end

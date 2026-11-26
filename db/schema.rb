@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_25_060800) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_26_072000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -79,9 +79,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_060800) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "join_code", null: false
+    t.string "meal_period", default: "dinner", null: false
+    t.datetime "matches_found_at"
     t.index ["join_code"], name: "index_nomikais_on_join_code", unique: true
     t.index ["share_token"], name: "index_nomikais_on_share_token", unique: true
     t.index ["user_id"], name: "index_nomikais_on_user_id"
+    t.index ["user_id"], name: "index_nomikais_one_ongoing_per_user", unique: true, where: "(((status)::text = 'open'::text) AND (matches_found_at IS NULL))"
   end
 
   create_table "participants", force: :cascade do |t|
@@ -95,9 +98,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_060800) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "invitation_id"
+    t.bigint "user_id"
     t.index ["invitation_id"], name: "index_participants_on_invitation_id", unique: true
+    t.index ["nomikai_id", "user_id"], name: "index_participants_one_per_account", unique: true, where: "(user_id IS NOT NULL)"
     t.index ["nomikai_id"], name: "index_participants_on_nomikai_id"
     t.index ["token"], name: "index_participants_on_token", unique: true
+    t.index ["user_id"], name: "index_participants_on_user_id"
   end
 
   create_table "swipes", force: :cascade do |t|
@@ -167,6 +173,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_060800) do
   add_foreign_key "nomikais", "users"
   add_foreign_key "participants", "invitations"
   add_foreign_key "participants", "nomikais"
+  add_foreign_key "participants", "users", on_delete: :nullify
   add_foreign_key "swipes", "nomikai_vibe_cards"
   add_foreign_key "swipes", "participants"
 end

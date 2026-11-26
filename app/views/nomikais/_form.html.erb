@@ -1,178 +1,51 @@
-
-<div class="create-event-page">
-  <div class="create-event-container">
-
-    <%# BACK NAVIGATION %>
-    <%= link_to nomikais_path, class: "event-back-link" do %>
-      ← Back to My Dining Events
+<div class="meeting-create" data-controller="meeting-map" data-meeting-map-key-value="<%= ENV.fetch('GOOGLE_MAPS_BROWSER_KEY', '') %>">
+  <%= form_with model: @nomikai, class: "meeting-create__form", data: { action: "submit->meeting-map#submit" } do |f| %>
+    <% if @nomikai.errors.any? %>
+      <div class="meeting-create__errors" role="alert"><%= @nomikai.errors.full_messages.join(" · ") %></div>
     <% end %>
-
-    <%# PAGE HEADER %>
-    <div class="create-event-header">
-      <span class="event-eyebrow">SWIPE & BITE · TOKYO</span>
-
-      <% if @nomikai.persisted? %>
-        <h1>Edit your <span>team dinner.</span></h1>
-        <p>Update your gathering details below.</p>
-      <% else %>
-        <h1>Setup your next <span>team dinner.</span></h1>
-        <p>
-          Set up your dining event and invite your colleagues
-          to discover a restaurant everyone will enjoy.
-        </p>
-      <% end %>
-    </div>
-
-    <%# FORM CARD %>
-    <div class="create-event-card">
-
-      <div class="form-card-header">
-        <div>
-          <h2>Event Details</h2>
-          <p>Tell us a little about your gathering.</p>
-        </div>
-        <span class="form-header-icon">🍽️</span>
+    <div class="meeting-create__map-wrap">
+      <div class="meeting-create__map" data-meeting-map-target="map"></div>
+      <div class="meeting-create__pin" data-meeting-map-target="pin" hidden><i class="fa-solid fa-location-dot"></i></div>
+      <div class="meeting-create__search">
+        <%= f.text_field :area, placeholder: "Search meeting location", aria: { label: "Meeting location" }, required: true, data: { meeting_map_target: "area", action: "input->meeting-map#areaEdited keydown.enter->meeting-map#search" } %>
+        <button type="button" data-action="meeting-map#search" aria-label="Search location"><i class="fa-solid fa-magnifying-glass"></i></button>
       </div>
-
-      <% if @nomikai.errors.any? %>
-        <div class="event-form-errors">
-          <strong>Please check the following:</strong>
-          <ul>
-            <% @nomikai.errors.full_messages.each do |message| %>
-              <li><%= message %></li>
-            <% end %>
-          </ul>
-        </div>
-      <% end %>
-
-      <%= simple_form_for @nomikai, html: { class: "event-form" } do |f| %>
-
-        <%# EVENT NAME %>
-        <%= f.input :name,
-              label: "Event name",
-              placeholder: "e.g. Friday Team Dinner",
-              hint: false,
-              required: true,
-              wrapper_html: { class: "event-form-group" },
-              input_html: { class: "event-input" } %>
-
-        <%# LOCATION %>
-        <div class="event-form-group">
-          <%= f.label :area, "Preferred area in Tokyo" %>
-
-          <div class="event-input-wrapper">
-            <span class="event-input-icon">📍</span>
-            <%= f.input_field :area,
-                  class: "event-input with-icon",
-                  placeholder: "e.g. Shibuya, Shinjuku, Marunouchi",
-                  required: true %>
-          </div>
-
-          <%= f.error :area %>
-        </div>
-
-        <%# DATE AND TIME %>
-        <%= f.input :event_date,
-              as: :datetime,
-              html5: true,
-              label: "Event date and time",
-              hint: false,
-              required: true,
-              wrapper_html: { class: "event-form-group" },
-              input_html: {
-                class: "event-input",
-                min: Time.current.strftime("%Y-%m-%dT%H:%M")
-              } %>
-
-        <%# GROUP SIZE %>
-        <div data-controller="range-output">
-          <%= f.input :group_size,
-                as: :range,
-                label: safe_join([
-                  "Expected group size",
-                  content_tag(:span, "(incl. host)", class: "label-note"),
-                  content_tag(:span, "", class: "label-value",
-                              data: { range_output_target: "output" })
-                ]),
-                label_html: { class: "label-with-value" },
-                hint: false,
-                wrapper_html: { class: "event-form-group" },
-                input_html: {
-                  class: "event-input",
-                  min: 2,
-                  max: 50,
-                  step: 1,
-                  data: {
-                    range_output_target: "input",
-                    action: "input->range-output#update"
-                  }
-                } %>
-        </div>
-
-        <%# BUDGET %>
-        <div data-controller="range-output"
-             data-range-output-prefix-value="¥">
-
-          <%= f.input :budget_per_person,
-                as: :range,
-                label: safe_join([
-                  "Budget per person",
-                  content_tag(:span, "", class: "label-value",
-                              data: { range_output_target: "output" })
-                ]),
-                label_html: { class: "label-with-value" },
-                hint: false,
-                required: false,
-                wrapper_html: { class: "event-form-group" },
-                input_html: {
-                  class: "event-input",
-                  min: 2000,
-                  max: 15000,
-                  step: 500,
-                  data: {
-                    range_output_target: "input",
-                    action: "input->range-output#update"
-                  }
-                } %>
-
-          <label>
-            <%= check_box_tag :flexible, "1",
-                  @nomikai.persisted? && @nomikai.budget_per_person.nil?,
-                  data: {
-                    range_output_target: "toggle",
-                    action: "change->range-output#update"
-                  } %>
-            I'm flexible
-          </label>
-          </div>
-
-          <%# INFORMATION BOX %>
-          <div class="event-info-box">
-            <span>💡</span>
-            <p>
-              Once your event is created, you can share an invitation
-              link with colleagues. They can join and swipe through
-              restaurant preferences.
-            </p>
-          </div>
-
-          <%# SUBMIT %>
-          <div class="event-form-actions">
-            <%= f.submit(
-                  @nomikai.persisted? ? "Update Dining Event →" : "Create Dining Event →",
-                  class: "event-submit-btn"
-                ) %>
-
-            <%= link_to "Cancel",
-                  @nomikai.persisted? ? nomikai_path(@nomikai) : nomikais_path,
-                  class: "event-cancel-btn" %>
-          </div>
-      <% end %>
+      <div class="meeting-create__map-note" data-meeting-map-target="status" aria-live="polite">Loading map…</div>
+      <%= f.hidden_field :latitude, data: { meeting_map_target: "latitude" } %>
+      <%= f.hidden_field :longitude, data: { meeting_map_target: "longitude" } %>
     </div>
-
-    <p class="event-footer-note">
-      Good food. Better teams. Better together.
-    </p>
-
-  </div>
+    <section class="meeting-create__sheet">
+      <div class="meeting-create__handle"></div>
+      <h1><%= @nomikai.persisted? ? "Edit gathering" : "Let's eat." %></h1>
+      <div class="meeting-create__location" role="status" aria-live="polite">
+        <span class="meeting-create__location-icon"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></span>
+        <div class="meeting-create__location-text">
+          <small>Meeting point</small>
+          <strong data-meeting-map-target="locationName"><%= @nomikai.area == "Selected on map" ? "Pinned location" : (@nomikai.area.presence || "Choose a meeting point") %></strong>
+        </div>
+        <button type="button" data-action="meeting-map#locate" aria-label="Use current location"><i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i></button>
+      </div>
+      <div class="meeting-create__meal" role="group" aria-label="Meal">
+        <% %w[lunch dinner].each do |meal| %>
+          <label>
+            <%= f.radio_button :meal_period, meal, required: true %>
+            <span><i class="fa-solid <%= meal == 'lunch' ? 'fa-sun' : 'fa-moon' %>"></i> <%= meal.capitalize %></span>
+          </label>
+        <% end %>
+      </div>
+      <div class="meeting-create__line">
+        <div><strong>People</strong><small>Including you</small></div>
+        <div class="meeting-create__stepper">
+          <button type="button" aria-label="Fewer people" data-action="meeting-map#decrease">−</button>
+          <%= f.number_field :group_size, min: 2, max: 50, value: @nomikai.group_size || 4, required: true, aria: { label: "People" }, data: { meeting_map_target: "people" } %>
+          <button type="button" aria-label="More people" data-action="meeting-map#increase">+</button>
+        </div>
+      </div>
+      <div class="meeting-create__line">
+        <div><strong>Budget per person</strong><small>JPY</small></div>
+        <div class="meeting-create__budget">¥ <%= f.number_field :budget_per_person, min: 500, step: 1, placeholder: "Enter amount", required: true, aria: { label: "Budget per person in yen" }, inputmode: "numeric", data: { controller: "budget-input", action: "input->budget-input#format turbo:before-cache@document->budget-input#restore" } %></div>
+      </div>
+      <%= f.submit(@nomikai.persisted? ? "Save changes" : "Create gathering", class: "meeting-create__submit") %>
+    </section>
+  <% end %>
 </div>

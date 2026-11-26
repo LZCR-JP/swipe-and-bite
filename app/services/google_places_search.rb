@@ -15,20 +15,13 @@ class GooglePlacesSearch
     "places.primaryType",
     "places.primaryTypeDisplayName",
     "places.businessStatus",
-    "places.attributions"
+    "places.attributions",
+    "places.photos"
   ].freeze
 
   DETAILED_FIELDS = [
     "places.priceLevel",
     "places.priceRange",
-    "places.rating",
-    "places.userRatingCount",
-    "places.goodForGroups",
-    "places.outdoorSeating",
-    "places.reservable",
-    "places.servesVegetarianFood",
-    "places.servesDinner",
-    "places.nationalPhoneNumber",
     "places.websiteUri"
   ].freeze
 
@@ -57,64 +50,81 @@ class GooglePlacesSearch
 
   SEARCH_HALF_WIDTH_KM = 0.8
 
-  attr_reader :used_fallback, :search_query
+  attr_reader :used_fallback, :next_state
 
-  def initialize(nomikai, detailed: false)
+  def initialize(nomikai, detailed: false, continuation: nil)
     @nomikai = nomikai
     @detailed = detailed
+    @continuation = continuation
   end
 
   def call
-    query = RestaurantSearchIntent.new(@nomikai).call
+    @next_state = nil
+    @next_page_token = nil
+    @seen_ids = []
+    @page_token = nil
+    @used_fallback = false
+    @active_filters = search_filters
 
-    Rails.logger.info("Restaurant search: #{query}")
+    if @continuation
+      @query = @continuation.fetch("query")
+      @page_token = @continuation.fetch("page_token")
+      @seen_ids = @continuation.fetch("seen_ids")
+      @used_fallback = @continuation.fetch("used_fallback")
+      if @continuation.fetch("filters") != @active_filters.deep_stringify_keys
+        raise StaleSearch, "Search conditions have changed"
+      end
+      places = search_places(@query)
+    else
+      @query = RestaurantSearchIntent.new(@nomikai).call
+      places = search_with_fallback(@query)
+    end
 
-    places = search_with_fallback(query)
+    places = places.uniq { |place| place.fetch("id") }
+                   .reject { |place| @seen_ids.include?(place.fetch("id")) }
+                   .first(3)
+
+    if @next_page_token.present?
+      @next_state = {
+        "query" => @query,
+        "page_token" => @next_page_token,
+        "seen_ids" => @seen_ids + places.map { |place| place.fetch("id") },
+        "used_fallback" => @used_fallback,
+        "filters" => @active_filters.deep_stringify_keys
+      }
+    end
 
     save_candidates(places)
-
     candidates = candidates_by_place_id
-
     places.map do |place|
-      present(
-        place,
-        candidates.fetch(place.fetch("id"))
-      )
+      present(place, candidates.fetch(place.fetch("id")))
     end
   end
+
+  class StaleSearch < StandardError; end
 
   private
 
   def search_with_fallback(query)
-    @used_fallback = false
-    @search_query = query
-
     places = search_places(query)
-
     return places if places.any?
 
-    restrictions = @nomikai.participants
-                          .flat_map(&:restrictions)
-                          .compact
-                          .reject(&:blank?)
-
+    restrictions = @nomikai.participants.flat_map(&:restrictions).compact.reject(&:blank?)
     return places if restrictions.any?
 
     @used_fallback = true
-    @search_query = fallback_query
-
-    Rails.logger.info("Fallback search: #{@search_query}")
-
-    search_places(@search_query)
+    @query = fallback_query
+    search_places(@query)
   end
 
   def fallback_query
-    terms = [@nomikai.area]
+    terms = [@nomikai.area == "Selected on map" ? nil : @nomikai.area]
+    terms << (@nomikai.meal_period == "lunch" ? "ランチ" : "ディナー")
 
     if @nomikai.group_size.to_i >= 6
       terms << "着席 宴会 グループ向け"
     else
-      terms << "グループ向け ディナー"
+      terms << "グループ向け レストラン"
     end
 
     if @nomikai.group_size.present?
@@ -131,7 +141,7 @@ class GooglePlacesSearch
   def field_mask
     fields = BASIC_FIELDS.dup
     fields.concat(DETAILED_FIELDS) if @detailed
-    fields.join(",")
+    fields.push("nextPageToken").join(",")
   end
 
   def search_places(query)
@@ -141,7 +151,9 @@ class GooglePlacesSearch
       raise "Google Places request failed (HTTP #{response.code})"
     end
 
-    JSON.parse(response.body).fetch("places", [])
+    body = JSON.parse(response.body)
+    @next_page_token = body["nextPageToken"]
+    body.fetch("places", [])
   end
 
   def build_request(query)
@@ -153,28 +165,24 @@ class GooglePlacesSearch
 
     request["X-Goog-FieldMask"] = field_mask
 
+    payload = (@active_filters || search_filters).merge(textQuery: query, pageSize: 3)
+    payload[:pageToken] = @page_token if @page_token.present?
+    request.body = JSON.generate(payload)
+    request
+  end
+
+  def search_filters
     payload = {
-      textQuery: query,
       includedType: "restaurant",
-      pageSize: 10,
       languageCode: "ja",
       regionCode: "JP",
       rankPreference: "RELEVANCE"
     }
-
     levels = budget_price_levels
     payload[:priceLevels] = levels if levels.any?
-
     restriction = location_restriction
     payload[:locationRestriction] = restriction if restriction
-
-    Rails.logger.info(
-      "Google Places search payload: #{payload.to_json}"
-    )
-
-    request.body = JSON.generate(payload)
-
-    request
+    payload
   end
 
   def effective_budget
@@ -318,6 +326,8 @@ class GooglePlacesSearch
 
       phone_number: place["nationalPhoneNumber"],
       website: place["websiteUri"],
+      photo_name: place["photos"]&.first&.dig("name"),
+      photo_attributions: place["photos"]&.first&.dig("authorAttributions") || [],
       attributions: place["attributions"]
     }
   end
