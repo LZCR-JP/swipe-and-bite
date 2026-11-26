@@ -61,10 +61,10 @@ class InvitationsControllerTest < ActionDispatch::IntegrationTest
 
     invitation.reload
     assert invitation.accepted?
-    assert_redirected_to participant_path(invitation.participant.token)
+    assert_redirected_to participant_swipes_path(invitation.participant.token)
 
     get invite_path(invitation.token)
-    assert_redirected_to participant_path(invitation.participant.token)
+    assert_redirected_to participant_swipes_path(invitation.participant.token)
   end
 
   test "show page renders the invite card" do

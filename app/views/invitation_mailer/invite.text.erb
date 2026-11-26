@@ -3,7 +3,7 @@ You're invited to <%= @nomikai.name %>!
 <%= @host_name %> wants your input to pick the perfect restaurant.
 
 Location: <%= @nomikai.area %>
-Date: <%= @nomikai.event_date.strftime("%b %d, %Y · %H:%M") %>
+Meal: <%= @nomikai.meal_period.capitalize %>
 Group size: <%= @nomikai.group_size %> people
 
 Join the event: <%= invite_url(@invitation.token) %>

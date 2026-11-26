@@ -34,8 +34,8 @@
         <div class="event-info-item">
           <i class="fa-solid fa-calendar"></i>
           <div>
-            <span>Date & Time</span>
-            <strong><%= @nomikai.event_date.strftime("%b %d, %Y · %H:%M") %></strong>
+            <span>Meal</span>
+            <strong><%= @nomikai.meal_period.capitalize %></strong>
           </div>
         </div>
       </div>
@@ -62,7 +62,7 @@
                     target: "_blank",
                     rel: "noopener noreferrer" %>
 
-        <% if @nomikai.status == "open" %>
+        <% if @nomikai.ongoing? %>
           <p class="vote-prompt">Would this restaurant work for your group?</p>
 
           <% if @candidate_vote.present? %>
@@ -98,7 +98,13 @@
     <% else %>
       <section class="participant-event-card participant-selected-restaurant">
         <span class="section-label">RESTAURANT MATCH</span>
-        <p>The selected restaurant will appear here.</p>
+        <% if @nomikai.finished? %>
+          <p>Your host has found restaurant matches.</p>
+        <% elsif @nomikai.ongoing? %>
+          <p>Waiting for your host to find restaurant matches.</p>
+        <% else %>
+          <p>Your host cancelled this gathering.</p>
+        <% end %>
       </section>
     <% end %>
 
@@ -113,8 +119,9 @@
           <i class="fa-solid fa-wallet"></i>
         </div>
         <div class="preference-content">
-          <span>Maximum budget</span>
-          <strong>¥<%= number_with_delimiter(@participant.budget_max) %></strong>
+          <span>Budget per person</span>
+          <% budget = @participant.budget_max || @nomikai.budget_per_person %>
+          <strong><%= budget.present? ? "¥#{number_with_delimiter(budget)}" : "Flexible" %></strong>
         </div>
       </div>
 
@@ -143,7 +150,9 @@
 
     <!-- Next step -->
     <div class="participant-next-step">
-      <% if @nomikai.status == "open" %>
+      <% if @nomikai.ongoing? && @participant.completed_at.present? %>
+        <div><h2>You're all set.</h2><p>Waiting for your host to find matches.</p></div>
+      <% elsif @nomikai.ongoing? %>
         <div>
           <h2>Ready to find your next favorite spot?</h2>
           <p>Swipe through dining styles to help your team find a restaurant everyone will enjoy.</p>
@@ -157,7 +166,7 @@
 
       <% else %>
         <div class="closed-event-message">
-          <h2>This event is closed</h2>
+          <h2><%= @nomikai.finished? ? "Matches found" : "Gathering cancelled" %></h2>
           <p>Restaurant swiping is no longer available for this event.</p>
         </div>
       <% end %>

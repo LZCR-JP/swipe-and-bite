@@ -381,16 +381,18 @@
       }
     }
   }
+}
 
 
+// Restaurant search results — mobile first.
 .recommendations-screen {
   min-height: 100vh;
-  padding: 40px 16px 64px;
+  padding: 20px 14px 48px;
   background: $background-cream;
 }
 
 .recommendations-page {
-  max-width: 760px;
+  max-width: 660px;
   margin: 0 auto;
   color: $text-primary;
 }
@@ -400,178 +402,175 @@
   font-size: 14px;
   text-decoration: none;
 
-  &:hover {
-    color: $brand-orange;
-  }
+  &:hover { color: $brand-orange; }
 }
 
 .recommendations-header {
-  margin: 30px 0 24px;
+  margin: 20px 0 18px;
 
   h1 {
-    margin: 12px 0 8px;
-    color: $text-primary;
-    font-size: clamp(28px, 6vw, 38px);
+    margin: 0 0 5px;
+    font-size: 28px;
     font-weight: 800;
-    line-height: 1.15;
+    line-height: 1.2;
   }
 
-  p {
-    margin: 0;
-    color: $text-secondary;
-    font-size: 15px;
-  }
+  p { margin: 0; color: $text-secondary; font-size: 14px; }
 }
 
-.recommendations-eyebrow {
-  display: inline-block;
-  padding: 7px 11px;
-  border-radius: 20px;
-  background: $background-soft;
-  color: $brand-orange-hover;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 1px;
-}
-
-.recommendation-list {
-  display: grid;
-  gap: 14px;
-}
+.recommendation-list { display: grid; gap: 12px; }
 
 .recommendation-card,
 .recommendations-empty {
-  padding: 22px;
+  padding: 15px;
   border: 1px solid $border-light;
-  border-radius: 16px;
+  border-radius: 14px;
   background: $background-white;
-  box-shadow: 0 6px 20px rgba(41, 33, 29, 0.05);
 }
 
-.recommendation-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+.recommendation-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(92px, 34%);
+  align-items: start;
+  gap: 12px;
+}
+
+.recommendation-details {
+  min-width: 0;
 
   h2 {
     margin: 0 0 7px;
-    color: $text-primary;
-    font-size: 20px;
+    font-size: 17px;
     font-weight: 750;
-    line-height: 1.3;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
   }
 
-  p {
-    margin: 0;
+  p { margin: 0; }
+
+  .recommendation-price {
+    color: $text-primary;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .recommendation-address {
     color: $text-secondary;
-    font-size: 14px;
-    line-height: 1.5;
+    font-size: 12px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+  }
+}
+
+.recommendation-photo {
+  margin: 0;
+  min-width: 0;
+
+  img, .recommendation-no-photo {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 10px;
+    background: $background-soft;
+  }
+
+  .recommendation-no-photo {
+    display: grid;
+    place-items: center;
+    color: $text-secondary;
+    font-size: 12px;
+  }
+
+  figcaption {
+    margin-top: 4px;
+    color: $text-secondary;
+    font-size: 10px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+
+    a { color: inherit; }
   }
 }
 
 .recommendation-actions {
   display: flex;
-  flex: 0 0 190px;
-  flex-direction: column;
   align-items: stretch;
-  gap: 10px;
-}
-
-.recommendation-select-form {
-  width: 100%;
-  margin: 0;
-}
-
-.recommendation-map-link,
-.recommendation-select-button {
-  display: inline-flex;
-  width: 100%;
-  min-height: 44px;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 14px;
-  border: 1px solid $brand-orange;
-  border-radius: 9px;
-  font-size: 14px;
-  font-weight: 700;
-  text-align: center;
-  text-decoration: none;
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid $border-light;
 }
 
 .recommendation-map-link {
+  display: inline-flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 7px 12px;
+  border: 1px solid $border-light;
+  border-radius: 24px;
+  color: $text-primary;
   background: $background-white;
-  color: $brand-orange;
-
-  &:hover {
-    background: $background-soft;
-    color: $brand-orange-hover;
-  }
-}
-
-.recommendation-select-button {
-  background: $brand-orange;
-  color: $background-white;
-
-  &:hover {
-    transform: translateY(-1px);
-    background: $brand-orange-hover;
-    border-color: $brand-orange-hover;
-    color: $background-white;
-  }
-
-  &:focus-visible,
-  &:focus {
-    outline: 3px solid rgba(255, 105, 0, 0.3);
-    outline-offset: 2px;
-  }
-}
-
-.recommendation-selected {
-  padding: 10px 12px;
-  border-radius: 9px;
-  background: $success-light;
-  color: $success;
   font-size: 13px;
   font-weight: 700;
-  text-align: center;
+  text-decoration: none;
+
+  &:first-child { color: $brand-orange; border-color: $brand-orange; }
+  &:hover { background: $background-soft; }
+  &:focus-visible { outline: 2px solid $brand-orange; outline-offset: 2px; }
 }
 
-.recommendations-attribution {
-  margin: 16px 0 0;
-  color: $text-muted;
+.recommendations-footer {
+  margin-top: 22px;
+  text-align: center;
+
+  p { margin: 0; color: $text-secondary; font-size: 12px; }
+}
+
+.recommendations-reshuffle-form { margin: 0; }
+
+.recommendations-reshuffle-button {
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid $border-light;
+  border-radius: 24px;
+  background: transparent;
+  color: $text-secondary;
+  font-size: 13px;
+  font-weight: 600;
+
+  &:hover { color: $brand-orange; border-color: $brand-orange; }
+  &:focus-visible { outline: 2px solid $brand-orange; outline-offset: 2px; }
+}
+
+.recommendations-note,
+.recommendations-fallback {
+  margin: 14px 0 0;
+  color: $text-secondary;
   font-size: 12px;
-  font-weight: 700;
+  line-height: 1.5;
+}
+
+.recommendations-fallback { margin: 0 0 12px; }
+
+.recommendations-attribution {
+  margin: 12px 0 0;
+  color: $text-secondary;
+  font: 400 14px Arial, sans-serif;
 }
 
 .recommendations-empty {
-  h2 {
-    margin: 0 0 6px;
-    color: $text-primary;
-    font-size: 20px;
-  }
-
-  p {
-    margin: 0;
-    color: $text-secondary;
-  }
+  h2 { font-size: 18px; margin: 0 0 6px; }
+  p { margin: 0; color: $text-secondary; font-size: 14px; }
 }
 
-@media (max-width: 600px) {
-  .recommendations-screen {
-    padding: 28px 14px 44px;
-  }
-
-  .recommendation-card {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 16px;
-    padding: 19px;
-  }
-
-  .recommendation-actions {
-    flex-basis: auto;
-  }
-}
+@media (min-width: 600px) {
+  .recommendations-screen { padding: 32px 20px 60px; }
+  .recommendation-card { padding: 18px; }
+  .recommendation-main { grid-template-columns: minmax(0, 1fr) 140px; }
+  .recommendation-details h2 { font-size: 20px; }
 }

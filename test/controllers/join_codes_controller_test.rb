@@ -39,6 +39,10 @@ class JoinCodesControllerTest < ActionDispatch::IntegrationTest
       post join_with_code_path(@nomikai.formatted_join_code),
            params: { participant: { nickname: "Aiko", budget_max: 4000 } }
     end
+    participant = @nomikai.participants.last
+    assert_equal "Guest 1", participant.nickname
+    assert_nil participant.budget_max
+    assert_redirected_to participant_swipes_path(participant.token)
   end
 
   test "a regenerated code no longer works" do

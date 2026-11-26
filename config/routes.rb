@@ -4,9 +4,12 @@ Rails.application.routes.draw do
   devise_for :users
   root to: "pages#home"
 
+  get "restaurant_photo", to: "restaurant_photos#show", as: :restaurant_photo
+
   # Host side (logged in)
   resources :nomikais do
     member do
+      get :progress
       patch :close
       get :recommendations, action: :recommendations_landing, as: :recommendations_landing
       post :recommendations
@@ -30,7 +33,9 @@ Rails.application.routes.draw do
   post "join/:share_token", to: "participants#create"
 
   resources :participants, only: :show, param: :token do
-    resources :swipes, only: %i[index create]
+    resources :swipes, only: %i[index create] do
+      post :finish, on: :collection
+    end
     resources :candidate_votes, only: :create
   end
 end

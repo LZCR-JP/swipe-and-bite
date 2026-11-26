@@ -1,102 +1,28 @@
-<div class="container py-5">
-  <div class="participant-join">
-
-    <!-- Branding -->
-    <div class="join-brand">
-      <h2>Swipe <span>&</span> Bite</h2>
-      <p>GOOD FOOD. BETTER TOGETHER.</p>
-    </div>
-
-    <!-- Introduction -->
-    <div class="join-header">
-      <span class="join-label">YOU'RE INVITED</span>
-      <h1>Join the event!</h1>
-      <p>Tell us your preferences and help your team find the perfect restaurant.</p>
-    </div>
-
-    <!-- Event information -->
-    <div class="join-event-card">
-      <h2><%= @nomikai.name %></h2>
-
-      <div class="join-event-details">
-        <p>
-          <i class="fa-solid fa-location-dot"></i>
-          <%= @nomikai.area %>
-        </p>
-
-        <p>
-          <i class="fa-solid fa-calendar"></i>
-          <%= @nomikai.event_date.strftime("%b %d, %Y · %H:%M") %>
-        </p>
-
-        <p>
-          <i class="fa-solid fa-users"></i>
-          <%= @nomikai.group_size %> people
-        </p>
-
-        <p>
-          <i class="fa-solid fa-wallet"></i>
-          ¥<%= number_with_delimiter(@nomikai.budget_per_person) %> suggested budget
-        </p>
-      </div>
-    </div>
-
-    <!-- Participant form -->
-    <div class="join-form-card">
-      <h2>Tell us about yourself</h2>
-      <p class="form-description">
-        Your preferences will help us find restaurants everyone can enjoy.
-      </p>
-
-      <%= simple_form_for @participant,
-          url: @join_path do |f| %>
-
-        <%= f.error_notification %>
-
-        <%= f.input :nickname,
-                    label: "Your name",
-                    placeholder: "Enter your name",
-                    required: true %>
-
-        <%= f.input :budget_max,
-                    label: "Maximum budget (JPY)",
-                    placeholder: "e.g. 5000",
-                    as: :numeric,
-                    input_html: { min: 1 },
-                    required: true %>
-
-        <div class="dietary-section">
-          <h3>Dietary restrictions</h3>
-          <p>Select all that apply.</p>
-
-          <%= f.input :restrictions,
-                      as: :check_boxes,
-                      collection: [
-                        "Vegetarian",
-                        "Vegan",
-                        "Halal",
-                        "Gluten-free",
-                        "Seafood allergy",
-                        "Nut allergy"
-                      ],
-                      label: false,
-                      include_hidden: false %>
-        </div>
-
-        <%= f.input :non_drinker,
-                    as: :boolean,
-                    label: "I don't drink alcohol" %>
-
-        <%= f.button :submit,
-                     "Join the Event",
-                     class: "btn-join-event" %>
-
-      <% end %>
-    </div>
-
-    <p class="join-footer">
-      Made for better team dining experiences.
-    </p>
-
-  </div>
-</div>
+<main class="quick-entry">
+  <header class="quick-entry__top">
+    <%= link_to join_code_path, class: "quick-entry__back", aria: { label: "Back to join" } do %>
+      <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+    <% end %>
+    <% if params[:code].present? %>
+      <span>JOIN · <%= @nomikai.formatted_join_code %></span>
+    <% end %>
+  </header>
+  <h1>Join the table.</h1>
+  <p class="quick-entry__sub">Is this your gathering?</p>
+  <section class="quick-entry__card">
+    <h2><%= @nomikai.name %></h2>
+    <p class="quick-entry__sub">Hosted by <%= @nomikai.user.name %></p>
+    <dl class="quick-entry__facts">
+      <div><i class="fa-solid fa-location-dot" aria-hidden="true"></i><dt>Location</dt><dd>
+        <% if @nomikai.area == "Selected on map" && @nomikai.latitude.present? && @nomikai.longitude.present? %>
+          <%= link_to "Meeting point", "https://www.google.com/maps/search/?api=1&query=#{ERB::Util.url_encode("#{@nomikai.latitude},#{@nomikai.longitude}")}", target: "_blank", rel: "noopener noreferrer" %>
+        <% else %><%= @nomikai.area %><% end %>
+      </dd></div>
+      <div><i class="fa-solid fa-user-group" aria-hidden="true"></i><dt>People</dt><dd><%= @nomikai.group_size %> people</dd></div>
+      <div><i class="fa-solid fa-wallet" aria-hidden="true"></i><dt>Budget</dt><dd><%= @nomikai.budget_per_person.present? ? "¥#{number_with_delimiter(@nomikai.budget_per_person)} / person" : "Flexible" %></dd></div>
+      <div><i class="fa-solid <%= @nomikai.meal_period == 'lunch' ? 'fa-sun' : 'fa-moon' %>" aria-hidden="true"></i><dt>Meal</dt><dd><%= @nomikai.meal_period.capitalize %></dd></div>
+    </dl>
+  </section>
+  <p class="quick-entry__identity"><i class="fa-regular fa-user" aria-hidden="true"></i> Joining as <%= current_user ? current_user.name : "a guest" %></p>
+  <%= button_to "Join & start swiping", @join_path, method: :post, class: "quick-entry__primary" %>
+</main>

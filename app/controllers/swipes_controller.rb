@@ -17,11 +17,9 @@ class SwipesController < ApplicationController
       id: @participant.swipes.select(:nomikai_vibe_card_id)
     ).first
 
-    return unless @current_card.nil?
-
-    @participant.update!(
-      completed_at: @participant.completed_at || Time.current
-    )
+    if @current_card.nil? && @participant.completed_at.present?
+      redirect_to participant_path(@participant.token)
+    end
   end
 
   def create
@@ -29,6 +27,10 @@ class SwipesController < ApplicationController
       if @nomikai.status != "open"
         return render plain: "This nomikai is closed.",
                       status: :forbidden
+      end
+
+      if @participant.reload.completed_at.present?
+        return redirect_to participant_path(@participant.token), status: :see_other
       end
 
       card = @nomikai.nomikai_vibe_cards.find(
@@ -44,17 +46,37 @@ class SwipesController < ApplicationController
       swipe.liked = params[:liked] == "true"
       swipe.save!
 
-      if @participant.swipes.count ==
-         @nomikai.nomikai_vibe_cards.count
-
-        @participant.update!(
-          completed_at: @participant.completed_at || Time.current
-        )
-      end
+      # The last swipe is not completion: dietary preferences must be submitted.
     end
 
     redirect_to participant_swipes_path(@participant.token),
                 status: :see_other
+  end
+
+  def finish
+    finished = false
+    @nomikai.with_lock do
+      @participant.reload
+      if @nomikai.ongoing? && @nomikai.nomikai_vibe_cards.exists? &&
+          !@nomikai.nomikai_vibe_cards.where.not(id: @participant.swipes.select(:nomikai_vibe_card_id)).exists?
+        unless @participant.completed_at.present?
+          preferences = params.fetch(:participant, ActionController::Parameters.new).permit(:non_drinker, restrictions: [])
+          @participant.update!(
+            restrictions: Array(preferences[:restrictions]) & Participant::DIETARY_RESTRICTIONS,
+            non_drinker: ActiveModel::Type::Boolean.new.cast(preferences[:non_drinker]) == true,
+            completed_at: Time.current
+          )
+        end
+        finished = true
+      end
+    end
+    if finished
+      redirect_to participant_path(@participant.token), status: :see_other
+    elsif @nomikai.ongoing?
+      redirect_to participant_swipes_path(@participant.token), status: :see_other
+    else
+      redirect_to participant_path(@participant.token), status: :see_other
+    end
   end
 
   private
@@ -70,7 +92,6 @@ class SwipesController < ApplicationController
   def ensure_open
     return unless @nomikai.status != "open"
 
-    render plain: "This nomikai is closed.",
-           status: :forbidden
+    redirect_to participant_path(@participant.token), status: :see_other
   end
 end

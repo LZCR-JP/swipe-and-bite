@@ -41,7 +41,7 @@
       </ol>
 
       <div class="invite-code-footer">
-        <span>Works until <%= nomikai.event_date.strftime("%b %d, %H:%M") %> or until you close the event.</span>
+        <span>Works while the gathering is open and accepting participants.</span>
         <%= button_to "Regenerate code",
                       regenerate_code_nomikai_path(nomikai),
                       method: :patch,

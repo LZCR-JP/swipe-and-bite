@@ -14,6 +14,7 @@ export default class extends Controller {
   }
 
   start(event) {
+    if (this.submitting || this.dragging) return
     if (event.target.closest("button, a, form")) return
     if (event.button !== undefined && event.button !== 0) return
 
@@ -21,6 +22,7 @@ export default class extends Controller {
     this.startX = event.clientX
     this.pointerId = event.pointerId
     this.cardTarget.setPointerCapture(event.pointerId)
+    this.cardTarget.style.transition = "none"
     this.cardTarget.classList.add("is-dragging")
   }
 
@@ -67,30 +69,37 @@ export default class extends Controller {
     const distance = direction === "right" ? "120vw" : "-120vw"
     const rotation = direction === "right" ? "24deg" : "-24deg"
 
-    this.cardTarget.style.transition = "transform 220ms ease-out"
+    const duration = this.reducedMotion ? 0 : 220
+    this.cardTarget.style.transition = `transform ${duration}ms cubic-bezier(.22, 1, .36, 1)`
     this.cardTarget.style.transform =
       `translateX(${distance}) rotate(${rotation})`
 
-    window.setTimeout(() => {
+    this.submitTimer = window.setTimeout(() => {
       const button = direction === "right"
         ? this.likeButtonTarget
         : this.dislikeButtonTarget
 
       button.click()
-    }, 220)
+    }, duration)
   }
 
   resetCard() {
     this.dragging = false
     this.pointerId = null
     this.cardTarget.classList.remove("is-dragging")
-    this.cardTarget.style.transition = "transform 180ms ease-out"
+    const duration = this.reducedMotion ? 0 : 300
+    this.cardTarget.style.transition = `transform ${duration}ms cubic-bezier(.22, 1, .36, 1)`
     this.cardTarget.style.transform = ""
     this.likeStampTarget.style.opacity = 0
     this.dislikeStampTarget.style.opacity = 0
 
-    window.setTimeout(() => {
-      this.cardTarget.style.transition = ""
-    }, 180)
+  }
+
+  get reducedMotion() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  }
+
+  disconnect() {
+    window.clearTimeout(this.submitTimer)
   }
 }

@@ -19,6 +19,9 @@ class RestaurantSearchIntent
     PRIORITY 1: GROUP REQUIREMENTS
 
     - Respect the effective budget per person.
+    - Match meal_period: lunch (ランチ) or dinner (ディナー).
+    - For lunch, avoid dinner-only venues and dinner courses.
+    - If area is "Selected on map", do not include those words in the query; geographic filters handle the location.
     - Consider group size and dietary restrictions.
     - For large groups, prefer venues suitable
       for seated group dinners and banquets.
@@ -105,7 +108,8 @@ class RestaurantSearchIntent
 
     terms = "グループ向け レストラン" if terms.empty?
 
-    "#{@nomikai.area} #{terms}"
+    area = @nomikai.area unless @nomikai.area == "Selected on map"
+    [area, terms].compact.join(" ")
   end
 
   private
@@ -117,6 +121,7 @@ class RestaurantSearchIntent
   def preferences
     NomikaiPreferenceSummary.new(@nomikai).call.slice(
       :area,
+      :meal_period,
       :effective_budget_per_person,
       :group_size,
       :participants_joined,

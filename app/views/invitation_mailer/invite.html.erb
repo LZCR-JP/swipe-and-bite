@@ -12,7 +12,7 @@
 
       <table role="presentation" style="width:100%;font-size:13px;color:#69635d;margin-bottom:24px;">
         <tr><td style="padding:4px 0;">📍 <%= @nomikai.area %></td></tr>
-        <tr><td style="padding:4px 0;">📅 <%= @nomikai.event_date.strftime("%b %d, %Y · %H:%M") %></td></tr>
+        <tr><td style="padding:4px 0;">📅 <%= @nomikai.meal_period.capitalize %></td></tr>
         <tr><td style="padding:4px 0;">👥 <%= @nomikai.group_size %> people</td></tr>
       </table>
 

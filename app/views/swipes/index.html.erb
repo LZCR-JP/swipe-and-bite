@@ -1,7 +1,7 @@
 <div class="container mt-4 swipes-page" data-controller="swipe">
-  <h1>Find Your Vibe</h1>
+  <% if @current_card.present? %><h1>Find Your Vibe</h1><% end %>
 
-  <% if @show_card_fallback_notice %>
+  <% if @show_card_fallback_notice && @current_card.present? %>
     <div class="alert alert-warning" role="status">
       No photo cards match both this event's budget and group size.
       We're showing other photo cards so your team can still share its preferences.
@@ -79,16 +79,27 @@
                     data: { swipe_target: "likeButton" } %>
     </div>
   <% else %>
-    <section class="swipe-complete-card" role="status">
-      <span class="swipe-complete-icon" aria-hidden="true">✓</span>
-      <p class="swipe-complete-label">PREFERENCES COMPLETE</p>
-
-      <h2>All done!</h2>
-      <p>Your preferences have been saved. The organizer can now use them to find a restaurant for your team.</p>
-
-      <%= link_to "Back to your event",
-                  participant_path(@participant.token),
-                  class: "swipe-back-button" %>
+    <section class="quick-entry quick-entry--finish">
+      <span class="quick-entry__check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+      <p class="quick-entry__sub">Swipes complete!</p>
+      <h2>Any dietary restrictions?</h2>
+      <p class="quick-entry__sub">Only select what applies to you. You can finish without selecting anything.</p>
+      <%= form_with url: finish_participant_swipes_path(@participant.token), method: :post, scope: :participant do |f| %>
+        <fieldset class="quick-entry__choices">
+          <legend class="visually-hidden">Dietary restrictions</legend>
+          <% Participant::DIETARY_RESTRICTIONS.each_with_index do |restriction, i| %>
+            <label class="quick-entry__chip" for="dietary_<%= i %>">
+              <%= check_box_tag "participant[restrictions][]", restriction, @participant.restrictions.include?(restriction), id: "dietary_#{i}" %>
+              <span><i class="fa-solid fa-check" aria-hidden="true"></i><%= restriction %></span>
+            </label>
+          <% end %>
+          <label class="quick-entry__chip" for="participant_non_drinker">
+            <%= f.check_box :non_drinker, checked: @participant.non_drinker? %>
+            <span><i class="fa-solid fa-check" aria-hidden="true"></i>No alcohol</span>
+          </label>
+        </fieldset>
+        <%= f.submit "Finish", class: "quick-entry__primary" %>
+      <% end %>
     </section>
   <% end %>
 </div>
