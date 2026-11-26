@@ -408,6 +408,15 @@
 .recommendations-header {
   margin: 20px 0 18px;
 
+  .recommendations-eyebrow {
+    display: block;
+    margin-bottom: 6px;
+    color: $brand-orange-hover;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+  }
+
   h1 {
     margin: 0 0 5px;
     font-size: 28px;
@@ -415,7 +424,21 @@
     line-height: 1.2;
   }
 
-  p { margin: 0; color: $text-secondary; font-size: 14px; }
+  p { max-width: 560px; margin: 0; color: $text-secondary; font-size: 14px; line-height: 1.5; }
+}
+
+.recommendations-context {
+  margin: 0 0 16px;
+  padding: 15px;
+  border: 1px solid $border-light;
+  border-radius: 14px;
+  background: $background-soft;
+
+  h2 { margin: 0 0 6px; color: $text-primary; font-size: 15px; font-weight: 750; }
+  p { margin: 0; color: $text-secondary; font-size: 13px; line-height: 1.5; }
+  strong { color: $text-primary; }
+
+  &__note { margin-top: 7px !important; font-size: 12px !important; }
 }
 
 .recommendation-list { display: grid; gap: 12px; }
@@ -504,6 +527,32 @@
 
     a { color: inherit; }
   }
+}
+
+.recommendation-why {
+  margin-top: 12px;
+  padding: 11px 12px;
+  border: 1px solid $border-light;
+  border-radius: 11px;
+  background: #fffdfb;
+
+  summary {
+    color: $brand-orange-hover;
+    font-size: 13px;
+    font-weight: 750;
+    cursor: pointer;
+  }
+
+  p {
+    margin: 9px 0 0;
+    color: $text-secondary;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  p strong { color: $text-primary; }
+  &__note { font-size: 11px !important; }
 }
 
 .recommendation-actions {

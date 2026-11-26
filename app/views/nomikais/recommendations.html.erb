@@ -3,9 +3,18 @@
     <%= link_to "← Back to event", nomikai_path(@nomikai), class: "recommendations-back-link" %>
 
     <header class="recommendations-header">
-      <h1>Your Matches</h1>
-      <p><%= @nomikai.area.to_s.titleize %> · <%= @nomikai.group_size %> people</p>
+      <span class="recommendations-eyebrow">RESTAURANT OPTIONS</span>
+      <h1>Choose a restaurant</h1>
+      <p>Choose a place to share with your group.</p>
     </header>
+
+    <% search_area = @nomikai.area == "Selected on map" ? "your chosen map location" : @nomikai.area.to_s.titleize %>
+
+    <section class="recommendations-context" aria-label="How recommendations are chosen">
+      <h2>Search based on</h2>
+      <p><strong><%= search_area %></strong> · <strong><%= @nomikai.meal_period %></strong> · <strong><%= @nomikai.group_size %> people</strong><% if @nomikai.budget_per_person.present? %> · <strong>¥<%= number_with_delimiter(@nomikai.budget_per_person) %>/person</strong><% end %></p>
+      <p class="recommendations-context__note">Team swipes and dietary needs are considered when available.</p>
+    </section>
 
     <% if @used_fallback && @places.any? %>
       <p class="recommendations-fallback">No exact results. Showing a broader search.</p>
@@ -32,6 +41,16 @@
                 <% if place[:address].present? %>
                   <p class="recommendation-address"><%= place[:address] %></p>
                 <% end %>
+                <% budget_comparison = nil %>
+                <% if @nomikai.budget_per_person.present? && start_price.present? && end_price.present? %>
+                  <% budget_comparison = if end_price.to_i <= @nomikai.budget_per_person
+                                           "Within your budget"
+                                         elsif start_price.to_i <= @nomikai.budget_per_person
+                                           "Overlaps your budget"
+                                         else
+                                           "Above your budget"
+                                         end %>
+                <% end %>
               </div>
 
               <figure class="recommendation-photo">
@@ -54,6 +73,15 @@
                 <% end %>
               </figure>
             </div>
+
+            <details class="recommendation-why">
+              <summary>Why this result?</summary>
+              <p>Found near <%= search_area %>.</p>
+              <% if budget_comparison.present? %>
+                <p><strong>Price:</strong> <%= budget_comparison %> (Google estimate).</p>
+              <% end %>
+              <p class="recommendation-why__note">Confirm price, seating and dietary needs with the restaurant.</p>
+            </details>
 
             <div class="recommendation-actions">
               <% if place[:google_maps_uri].present? %>
@@ -87,7 +115,7 @@
           </article>
         <% end %>
       </div>
-      <p class="recommendations-note">Prices are estimates. Confirm dinner prices, seating and dietary requirements with the restaurant.</p>
+      <p class="recommendations-note">Prices are estimates. Confirm the final price, seating and dietary requirements with the restaurant.</p>
       <p class="recommendations-attribution" translate="no"></p>
     <% else %>
       <section class="recommendations-empty">
