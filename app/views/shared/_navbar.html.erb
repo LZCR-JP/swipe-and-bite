@@ -1,19 +1,28 @@
+<% active_tab = if current_page?(new_nomikai_path) || (controller_name == "nomikais" && action_name == "create")
+                  :create
+                elsif %w[join_codes swipes participants].include?(controller_name)
+                  :join
+                elsif controller_name == "nomikais"
+                  :gatherings
+                elsif devise_controller?
+                  :account
+                end %>
 <nav class="bottom-nav" aria-label="Main navigation">
 
   <%= link_to new_nomikai_path,
-      class: "bottom-nav__item #{'active' if current_page?(new_nomikai_path)}" do %>
+      class: "bottom-nav__item #{'active' if active_tab == :create}", aria: { current: ("page" if active_tab == :create) } do %>
     <i class="fa-solid fa-location-dot"></i>
     <span>Create</span>
   <% end %>
 
   <%= link_to join_code_path,
-      class: "bottom-nav__item #{'active' if controller_name == 'join_codes' || controller_name == 'swipes' || controller_name == 'participants'}" do %>
+      class: "bottom-nav__item #{'active' if active_tab == :join}", aria: { current: ("page" if active_tab == :join) } do %>
     <i class="fa-solid fa-users"></i>
     <span>Join</span>
   <% end %>
 
   <%= link_to nomikais_path,
-      class: "bottom-nav__item #{'active' if controller_name == 'nomikais' && action_name != 'new' && action_name != 'create'}" do %>
+      class: "bottom-nav__item #{'active' if active_tab == :gatherings}", aria: { current: ("page" if active_tab == :gatherings) } do %>
     <i class="fa-solid fa-calendar-days"></i>
     <span>Gatherings</span>
   <% end %>
@@ -21,7 +30,7 @@
   <% account_path = user_signed_in? ? edit_user_registration_path : new_user_session_path %>
 
   <%= link_to account_path,
-      class: "bottom-nav__item #{'active' if devise_controller?}" do %>
+      class: "bottom-nav__item #{'active' if active_tab == :account}", aria: { current: ("page" if active_tab == :account) } do %>
     <i class="fa-regular fa-user"></i>
     <span>Account</span>
   <% end %>

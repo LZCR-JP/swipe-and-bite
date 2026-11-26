@@ -41,4 +41,16 @@ class NomikaisControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to nomikai_path(@gathering)
     assert @gathering.reload.ongoing?
   end
+
+  test "host lobby shows the join code instead of the retired email invite form" do
+    @gathering.invitations.create!(email: "aiko@example.com", sent_at: Time.current)
+
+    get nomikai_path(@gathering)
+    assert_response :success
+    assert_select "input.host-lobby__code[value=?]", @gathering.formatted_join_code, count: 1
+    assert_select "a.host-lobby__swipe[href=?]", join_with_code_path(@gathering.formatted_join_code), count: 1
+    assert_select "input[name=emails]", count: 0
+    assert_no_match "aiko@example.com", response.body
+  end
+
 end

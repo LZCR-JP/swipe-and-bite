@@ -17,12 +17,17 @@ function loadMaps(key) {
 }
 
 export default class extends Controller {
-  static targets = ["map", "pin", "area", "latitude", "longitude", "status", "people"]
+  static targets = ["map", "pin", "area", "latitude", "longitude", "status", "people", "locationName"]
   static values = { key: String }
 
   async connect() {
     this.active = true
     this.revision = 0
+    this.pending = false
+    this.dragging = false
+    this.dirty = false
+    this.lastCenter = null
+    this.showLocation(this.areaTarget.value === "Selected on map" ? "Pinned location" : this.areaTarget.value.trim() || "Choose a meeting point")
     this.saved = this.latitudeTarget.value !== "" && this.longitudeTarget.value !== ""
     if (!this.keyValue) {
       this.message("Map unavailable. Enter an area instead.")
@@ -35,13 +40,29 @@ export default class extends Controller {
       this.map = new this.maps.Map(this.mapTarget, { center, zoom: 15, disableDefaultUI: true, zoomControl: true, gestureHandling: "greedy", clickableIcons: false })
       this.geocoder = new this.maps.Geocoder()
       this.pinTarget.hidden = false
-      this.dragListener = this.map.addListener("dragstart", () => { this.revision++; this.dragging = true; this.clearCoordinates() })
-      this.idleListener = this.map.addListener("idle", () => {
-        if (this.dragging) { this.dragging = false; this.choose(this.map.getCenter().toJSON(), "Selected on map") }
+      this.lastCenter = center
+      this.dragListener = this.map.addListener("dragstart", () => {
+        this.revision++
+        this.pending = false
+        this.dragging = true
+        this.clearCoordinates()
+        this.showLocation("Moving pin…")
+        this.message("Move the map to choose your meeting point")
       })
-      this.clickListener = this.map.addListener("click", event => { this.revision++; this.choose(event.latLng.toJSON(), "Selected on map", true) })
+      this.idleListener = this.map.addListener("idle", () => {
+        const point = this.map.getCenter()?.toJSON()
+        if (!point) return
+        const moved = !this.samePoint(point, this.lastCenter)
+        if (this.dragging || moved) {
+          this.dragging = false
+          this.choosePin(point)
+        }
+      })
+      this.clickListener = this.map.addListener("click", event => this.choosePin(event.latLng.toJSON(), true))
       this.message(this.saved ? "Move the map to change location" : "Move the map or search for a meeting point")
-      if (!this.saved && !this.areaTarget.value.trim()) this.locate()
+      if (this.saved && this.areaTarget.value === "Selected on map") this.choosePin(center)
+      else if (!this.saved && !this.areaTarget.value.trim()) this.locate()
+      else if (!this.saved) { this.dirty = true; this.message("Search to confirm this location") }
     } catch (_) {
       this.message("Map unavailable. Enter an area instead.")
     }
@@ -56,46 +77,111 @@ export default class extends Controller {
   }
 
   message(text) { this.statusTarget.textContent = text }
+  showLocation(text) { this.locationNameTarget.textContent = text }
   clearCoordinates() { this.latitudeTarget.value = ""; this.longitudeTarget.value = "" }
-  areaEdited() { this.revision++; this.dragging = false; this.clearCoordinates(); this.message("Search to set the pin, or use the typed area") }
+  samePoint(a, b) { return !!b && Math.abs(a.lat - b.lat) < 0.000001 && Math.abs(a.lng - b.lng) < 0.000001 }
+
+  areaEdited() {
+    this.revision++
+    this.pending = false
+    this.dragging = false
+    this.dirty = true
+    this.clearCoordinates()
+    this.showLocation(this.areaTarget.value.trim() ? (this.map ? "Location not confirmed" : this.areaTarget.value.trim()) : "Choose a meeting point")
+    this.message(this.map ? "Search to set the pin" : "Map unavailable. Enter an area instead.")
+  }
+
+  areaLabel(results) {
+    // Prefer neighborhood and city instead of a street number or private address.
+    const result = results?.[0]
+    if (!result) return null
+    const components = result.address_components || []
+    const component = (...types) => components.find(item => types.some(type => item.types.includes(type)))?.long_name
+    const neighborhood = component("neighborhood", "sublocality_level_2") || component("sublocality_level_1", "sublocality")
+    const city = component("locality", "postal_town", "administrative_area_level_2")
+    const region = component("administrative_area_level_1")
+    return [...new Set([neighborhood, city, region].filter(Boolean))].join(", ") || null
+  }
+
   choose(point, label, move = false) {
     if (!this.active) return
+    this.lastCenter = point
     this.latitudeTarget.value = point.lat
     this.longitudeTarget.value = point.lng
     this.areaTarget.value = label
+    this.pending = false
+    this.dirty = false
+    this.dragging = false
     if (move) this.map.setCenter(point)
-    this.message("Meeting point set · move the map to change")
+    this.showLocation(label === "Selected on map" ? "Pinned location" : label)
+    this.message(label === "Selected on map" ? "Pin set · area name unavailable" : "Meeting point set · move the map to change")
   }
+
+  async choosePin(point, move = false) {
+    const version = ++this.revision
+    this.lastCenter = point
+    this.pending = true
+    this.dirty = false
+    this.dragging = false
+    this.clearCoordinates()
+    if (move) this.map.setCenter(point)
+    this.showLocation("Finding area…")
+    this.message("Finding the name of your meeting point…")
+    try {
+      const { results } = await this.geocoder.geocode({ location: point })
+      if (!this.active || version !== this.revision) return
+      this.choose(point, this.areaLabel(results) || "Selected on map")
+    } catch (_) {
+      if (this.active && version === this.revision) this.choose(point, "Selected on map")
+    }
+  }
+
   locate() {
     if (!this.map || !navigator.geolocation) { this.message("Use search or move the map to choose a location"); return }
     const version = ++this.revision
+    this.pending = true
     this.message("Finding your location…")
     navigator.geolocation.getCurrentPosition(({ coords }) => {
       if (!this.active || version !== this.revision) return
-      this.choose({ lat: coords.latitude, lng: coords.longitude }, "Selected on map", true)
+      this.choosePin({ lat: coords.latitude, lng: coords.longitude }, true)
     }, () => {
-      if (this.active && version === this.revision) this.message("Location unavailable. Search or move the map.")
+      if (this.active && version === this.revision) {
+        this.pending = false
+        this.message("Location unavailable. Search or move the map.")
+      }
     }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 })
   }
+
   async search(event) {
     event.preventDefault()
     const area = this.areaTarget.value.trim()
     if (!area || area === "Selected on map" || !this.geocoder) return
     const version = ++this.revision
+    this.pending = true
+    this.dirty = true
     this.clearCoordinates()
-    this.message("Searching…")
+    this.showLocation("Searching…")
+    this.message("Searching for your meeting point…")
     try {
       const { results } = await this.geocoder.geocode({ address: area, componentRestrictions: { country: "JP" } })
       if (!this.active || version !== this.revision) return
       if (!results.length) throw new Error("No location")
       this.choose(results[0].geometry.location.toJSON(), area, true)
     } catch (_) {
-      if (this.active && version === this.revision) this.message("Location not found. Try another area or move the map.")
+      if (this.active && version === this.revision) {
+        this.pending = false
+        this.showLocation("Location not found")
+        this.message("Try another area or move the map.")
+      }
     }
   }
+
   submit(event) {
-    if (this.dragging || (this.areaTarget.value === "Selected on map" && !this.latitudeTarget.value)) {
-      event.preventDefault(); this.message("Choose a meeting point first.")
+    const center = this.map?.getCenter()?.toJSON()
+    const unconfirmed = this.map && (this.dirty || !this.latitudeTarget.value || !this.longitudeTarget.value || (center && !this.samePoint(center, this.lastCenter)))
+    if (this.pending || this.dragging || unconfirmed || (this.areaTarget.value === "Selected on map" && !this.latitudeTarget.value)) {
+      event.preventDefault()
+      this.message(this.pending ? "Finding your meeting point. Try again in a moment." : "Search or move the pin to confirm your meeting point first.")
     }
   }
   decrease() { this.peopleTarget.value = Math.max(2, (Number(this.peopleTarget.value) || 2) - 1) }

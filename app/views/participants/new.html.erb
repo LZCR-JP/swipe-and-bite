@@ -14,8 +14,8 @@
     <p class="quick-entry__sub">Hosted by <%= @nomikai.user.name %></p>
     <dl class="quick-entry__facts">
       <div><i class="fa-solid fa-location-dot" aria-hidden="true"></i><dt>Location</dt><dd>
-        <% if @nomikai.area == "Selected on map" && @nomikai.latitude.present? && @nomikai.longitude.present? %>
-          <%= link_to "Meeting point", "https://www.google.com/maps/search/?api=1&query=#{ERB::Util.url_encode("#{@nomikai.latitude},#{@nomikai.longitude}")}", target: "_blank", rel: "noopener noreferrer" %>
+        <% if @nomikai.latitude.present? && @nomikai.longitude.present? %>
+          <%= link_to (@nomikai.area == "Selected on map" ? "Meeting point" : @nomikai.area), "https://www.google.com/maps/search/?api=1&query=#{ERB::Util.url_encode("#{@nomikai.latitude},#{@nomikai.longitude}")}", target: "_blank", rel: "noopener noreferrer" %>
         <% else %><%= @nomikai.area %><% end %>
       </dd></div>
       <div><i class="fa-solid fa-user-group" aria-hidden="true"></i><dt>People</dt><dd><%= @nomikai.group_size %> people</dd></div>

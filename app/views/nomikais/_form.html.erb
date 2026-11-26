@@ -10,7 +10,6 @@
         <%= f.text_field :area, placeholder: "Search meeting location", aria: { label: "Meeting location" }, required: true, data: { meeting_map_target: "area", action: "input->meeting-map#areaEdited keydown.enter->meeting-map#search" } %>
         <button type="button" data-action="meeting-map#search" aria-label="Search location"><i class="fa-solid fa-magnifying-glass"></i></button>
       </div>
-      <button type="button" class="meeting-create__locate" data-action="meeting-map#locate" aria-label="Use current location"><i class="fa-solid fa-location-crosshairs"></i></button>
       <div class="meeting-create__map-note" data-meeting-map-target="status" aria-live="polite">Loading map…</div>
       <%= f.hidden_field :latitude, data: { meeting_map_target: "latitude" } %>
       <%= f.hidden_field :longitude, data: { meeting_map_target: "longitude" } %>
@@ -18,6 +17,14 @@
     <section class="meeting-create__sheet">
       <div class="meeting-create__handle"></div>
       <h1><%= @nomikai.persisted? ? "Edit gathering" : "Let's eat." %></h1>
+      <div class="meeting-create__location" role="status" aria-live="polite">
+        <span class="meeting-create__location-icon"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></span>
+        <div class="meeting-create__location-text">
+          <small>Meeting point</small>
+          <strong data-meeting-map-target="locationName"><%= @nomikai.area == "Selected on map" ? "Pinned location" : (@nomikai.area.presence || "Choose a meeting point") %></strong>
+        </div>
+        <button type="button" data-action="meeting-map#locate" aria-label="Use current location"><i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i></button>
+      </div>
       <div class="meeting-create__meal" role="group" aria-label="Meal">
         <% %w[lunch dinner].each do |meal| %>
           <label>
@@ -36,7 +43,7 @@
       </div>
       <div class="meeting-create__line">
         <div><strong>Budget per person</strong><small>JPY</small></div>
-        <div class="meeting-create__budget">¥ <%= f.number_field :budget_per_person, min: 500, step: 1, placeholder: "Enter amount", required: true, aria: { label: "Budget per person in yen" }, inputmode: "numeric" %></div>
+        <div class="meeting-create__budget">¥ <%= f.number_field :budget_per_person, min: 500, step: 1, placeholder: "Enter amount", required: true, aria: { label: "Budget per person in yen" }, inputmode: "numeric", data: { controller: "budget-input", action: "input->budget-input#format turbo:before-cache@document->budget-input#restore" } %></div>
       </div>
       <%= f.submit(@nomikai.persisted? ? "Save changes" : "Create gathering", class: "meeting-create__submit") %>
     </section>

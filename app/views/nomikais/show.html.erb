@@ -24,8 +24,8 @@
   <h1><%= @nomikai.name.presence || "Your gathering" %></h1>
   <div class="host-lobby__meta">
     <span><i class="fa-solid fa-location-dot" aria-hidden="true"></i>
-      <% if @nomikai.area == "Selected on map" && @nomikai.latitude.present? && @nomikai.longitude.present? %>
-        <%= link_to "Meeting point", "https://www.google.com/maps/search/?api=1&query=#{ERB::Util.url_encode("#{@nomikai.latitude},#{@nomikai.longitude}")}", target: "_blank", rel: "noopener noreferrer" %>
+      <% if @nomikai.latitude.present? && @nomikai.longitude.present? %>
+        <%= link_to (@nomikai.area == "Selected on map" ? "Meeting point" : @nomikai.area), "https://www.google.com/maps/search/?api=1&query=#{ERB::Util.url_encode("#{@nomikai.latitude},#{@nomikai.longitude}")}", target: "_blank", rel: "noopener noreferrer" %>
       <% else %>
         <%= @nomikai.area %>
       <% end %>
@@ -43,7 +43,7 @@
       <p>Search again to refresh restaurant recommendations.</p>
     </section>
     <section class="host-lobby__action">
-      <%= button_to "View fresh matches", recommendations_nomikai_path(@nomikai), method: :post, class: "host-lobby__primary", form: { data: { turbo: false } } %>
+      <%= button_to "View fresh matches", recommendations_nomikai_path(@nomikai), method: :post, class: "host-lobby__primary", form: { data: { turbo: false, controller: "match-loading", action: "submit->match-loading#start pageshow@window->match-loading#reset turbo:before-cache@document->match-loading#reset" } } %>
     </section>
   <% else %>
     <div class="gathering-status"><span class="gathering-status__dot"></span> Ongoing gathering</div>
@@ -98,7 +98,7 @@
       <button class="host-lobby__primary" disabled>Find our top 3</button>
       <p>At least one participant must finish.</p>
     <% else %>
-      <%= button_to "Find our top 3", recommendations_nomikai_path(@nomikai), method: :post, class: "host-lobby__primary", form: { data: { turbo: false } } %>
+      <%= button_to "Find our top 3", recommendations_nomikai_path(@nomikai), method: :post, class: "host-lobby__primary", form: { data: { turbo: false, controller: "match-loading", action: "submit->match-loading#start pageshow@window->match-loading#reset turbo:before-cache@document->match-loading#reset" } } %>
       <% if completed < total %><p><%= total - completed %> more responses expected. Wait to include everyone’s dietary restrictions.</p><% else %><p>Everyone is ready. Let's find a spot.</p><% end %>
     <% end %>
   </section>

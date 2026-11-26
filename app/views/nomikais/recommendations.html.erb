@@ -91,7 +91,7 @@
                       method: :post,
                       params: { continuation: @next_matches_token },
                       class: "recommendations-reshuffle-button",
-                      form: { class: "recommendations-reshuffle-form" } %>
+                      form: { class: "recommendations-reshuffle-form", data: { controller: "match-loading", action: "submit->match-loading#start turbo:submit-end->match-loading#reset pageshow@window->match-loading#reset turbo:before-cache@document->match-loading#reset" } } %>
       <% elsif @places.any? %>
         <p>No more matches for this search.</p>
       <% end %>

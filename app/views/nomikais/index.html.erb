@@ -2,23 +2,29 @@
   <header class="gathering-hub__header"><h1>Gatherings</h1></header>
   <% if @ongoing_gathering %>
     <%= render "ongoing", gathering: @ongoing_gathering %>
+  <% else %>
+    <section class="gathering-idle">
+      <span><i class="fa-solid fa-utensils" aria-hidden="true"></i></span>
+      <div><h2>Ready for the next bite?</h2><p>No ongoing gathering.</p></div>
+      <%= link_to new_nomikai_path, aria: { label: "Create a gathering" } do %><i class="fa-solid fa-arrow-right" aria-hidden="true"></i><% end %>
+    </section>
   <% end %>
   <section class="gathering-history">
     <h2>History</h2>
     <% if @nomikais.any? %>
       <% @nomikais.each do |gathering| %>
         <%= link_to nomikai_path(gathering), class: "gathering-history__row" do %>
-          <span class="gathering-history__icon"><i class="fa-solid fa-utensils" aria-hidden="true"></i></span>
+          <span class="gathering-history__icon"><i class="fa-solid <%= gathering.meal_period == "lunch" ? "fa-sun" : "fa-moon" %>" aria-hidden="true"></i></span>
           <span class="gathering-history__details">
             <strong><%= gathering.name %></strong>
-            <small><%= gathering.area %> · <%= gathering.group_size %> people</small>
+            <small><%= gathering.area == "Selected on map" ? "Pinned location" : gathering.area %> · <%= gathering.group_size %> people</small>
             <small><%= l(gathering.matches_found_at.to_date, format: :long) %></small>
           </span>
           <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
         <% end %>
       <% end %>
     <% else %>
-      <p class="gathering-hub__hint">Gatherings with restaurant matches will appear here.</p>
+      <p class="gathering-history__empty">No completed gatherings yet.</p>
     <% end %>
   </section>
 </main>
