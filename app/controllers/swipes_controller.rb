@@ -24,9 +24,8 @@ class SwipesController < ApplicationController
 
   def create
     @nomikai.with_lock do
-      if @nomikai.status != "open"
-        return render plain: "This nomikai is closed.",
-                      status: :forbidden
+      unless @nomikai.ongoing?
+        return redirect_to participant_path(@participant.token), status: :see_other
       end
 
       if @participant.reload.completed_at.present?
@@ -90,7 +89,7 @@ class SwipesController < ApplicationController
   end
 
   def ensure_open
-    return unless @nomikai.status != "open"
+    return if @nomikai.ongoing?
 
     redirect_to participant_path(@participant.token), status: :see_other
   end

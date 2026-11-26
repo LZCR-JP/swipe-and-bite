@@ -130,7 +130,7 @@ class NomikaisController < ApplicationController
     @nomikai.with_lock do
       cancelled = !@nomikai.ongoing? && !@nomikai.finished?
       if !cancelled && @places.any? && !@nomikai.finished?
-        @nomikai.update!(matches_found_at: Time.current, status: "closed")
+        @nomikai.update!(matches_found_at: Time.current)
       end
     end
     if cancelled
