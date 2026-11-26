@@ -17,8 +17,8 @@
           <h2><%= @nomikai.name.capitalize %></h2>
         </div>
 
-        <span class="event-status <%= @nomikai.status %>">
-          <%= @nomikai.status.capitalize %>
+        <span class="event-status <%= @nomikai.restaurant_feedback_open? ? 'open' : @nomikai.status %>">
+          <%= @nomikai.restaurant_feedback_open? ? "Feedback open" : @nomikai.status.capitalize %>
         </span>
       </div>
 
@@ -62,8 +62,8 @@
                     target: "_blank",
                     rel: "noopener noreferrer" %>
 
-        <% if @nomikai.ongoing? %>
-          <p class="vote-prompt">Would this restaurant work for your group?</p>
+        <% if @nomikai.restaurant_feedback_open? %>
+          <p class="vote-prompt">Would this place work for your group? Your feedback helps the host decide whether to keep it.</p>
 
           <% if @candidate_vote.present? %>
             <p class="vote-status">
