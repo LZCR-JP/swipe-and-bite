@@ -29,9 +29,9 @@
   <div class="host-lobby__meta">
     <span><i class="fa-solid fa-location-dot" aria-hidden="true"></i>
       <% if @nomikai.latitude.present? && @nomikai.longitude.present? %>
-        <%= link_to (@nomikai.area == "Selected on map" ? "Meeting point" : @nomikai.area), "https://www.google.com/maps/search/?api=1&query=#{ERB::Util.url_encode("#{@nomikai.latitude},#{@nomikai.longitude}")}", target: "_blank", rel: "noopener noreferrer" %>
+        <%= link_to (@nomikai.area == "Selected on map" ? "Meeting point" : @nomikai.area.capitalize), "https://www.google.com/maps/search/?api=1&query=#{ERB::Util.url_encode("#{@nomikai.latitude},#{@nomikai.longitude}")}", target: "_blank", rel: "noopener noreferrer" %>
       <% else %>
-        <%= @nomikai.area %>
+        <%= @nomikai.area.capitalize %>
       <% end %>
     </span>
     <span><i class="fa-solid fa-user-group" aria-hidden="true"></i> <%= total %> people</span>
@@ -47,8 +47,9 @@
       <section class="host-lobby__selected" aria-labelledby="selected-restaurant-heading">
         <div class="host-lobby__selected-heading">
           <div>
-            <span class="host-lobby__selected-label">YOUR GROUP’S PICK</span>
+            <span class="host-lobby__selected-label">SELECTED RESTAURANT</span>
             <h2 id="selected-restaurant-heading"><%= @selected_restaurant_name.presence || "Restaurant selected" %></h2>
+            <p class="host-lobby__selected-cuisine"><span>Cuisine</span><strong><%= selected_venue.primary_type.presence || "Not listed" %></strong></p>
             <% if selected_venue.formatted_address.present? %>
               <p><%= selected_venue.formatted_address %></p>
             <% else %>
@@ -65,7 +66,7 @@
               <h3>Team feedback</h3>
               <p><%= selected_vote_count %> of <%= people.size %> joined teammates responded</p>
             </div>
-            <strong><%= selected_approvals %> approved</strong>
+            <strong><%= selected_approvals %> Liked</strong>
           </div>
           <% if people.any? %>
             <progress class="host-lobby__progress" value="<%= [selected_vote_count, people.size].min %>" max="<%= people.size %>" aria-label="Team feedback received"><%= (selected_vote_count.to_f / people.size * 100).round %>%</progress>
@@ -75,9 +76,9 @@
                 <% vote = selected_votes[participant.id] %>
                 <div class="host-lobby__person">
                   <span class="host-lobby__avatar" aria-hidden="true"><%= participant.nickname.to_s.first.to_s.upcase %></span>
-                  <strong><%= participant.nickname %></strong>
+                  <strong><%= participant.nickname.capitalize %></strong>
                   <% if vote %>
-                    <span class="host-lobby__vote-status <%= vote.approved? ? "host-lobby__vote-status--approved" : "host-lobby__vote-status--alternative" %>"><%= vote.approved? ? "Looks good" : "Wants another option" %></span>
+                    <span class="host-lobby__vote-status <%= vote.approved? ? "host-lobby__vote-status--approved" : "host-lobby__vote-status--alternative" %>"><%= vote.approved? ? "Approved!" : "Wants another option" %></span>
                   <% else %>
                     <span class="host-lobby__pending">Waiting</span>
                   <% end %>

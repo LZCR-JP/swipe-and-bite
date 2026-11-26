@@ -1,83 +1,71 @@
-<div class="container mt-4 swipes-page" data-controller="swipe">
-  <% if @current_card.present? %><h1>Find Your Vibe</h1><% end %>
-
-  <% if @show_card_fallback_notice && @current_card.present? %>
-    <div class="alert alert-warning" role="status">
-      No photo cards match both this event's budget and group size.
-      We're showing other photo cards so your team can still share its preferences.
-      Some cards may fall outside your event limits.
-    </div>
-  <% end %>
-
+<div class="container swipes-page" data-controller="swipe">
   <% if @current_card.present? %>
-    <p><%= @completed_count %> / <%= @total_cards %> completed</p>
+    <% card = @current_card.vibe_card %>
+    <% description = card.description.to_s %>
+    <% show_description = description.present? && !description.match?(/illustrative .* preference card|provisional, not verified/i) %>
+    <% cuisine = card.cuisine.to_s.humanize unless card.cuisine.to_s.casecmp("unspecified").zero? %>
+    <% card_type = { "food" => "FOOD IDEA", "people" => "GROUP MOMENT" }.fetch(card.image_type, "RESTAURANT ATMOSPHERE") %>
 
-    <div class="progress mb-4">
-      <div
-        class="progress-bar"
-        style="width: <%= @completed_count.to_f / @total_cards * 100 %>%">
+    <main class="swipe-experience">
+      <header class="swipe-page-header">
+        <span class="swipe-page-header__eyebrow">YOUR GROUP’S VIBE</span>
+        <h1>Help your group choose a place</h1>
+        <p class="swipe-instruction"><i class="fa-solid fa-arrows-left-right" aria-hidden="true"></i> Swipe right to like, left to pass — or use the buttons</p>
+        <%# <p>Swipe through food and restaurant styles. Your preferences help your organizer find real places the group will enjoy.</p> %>
+      </header>
+
+      <% if @show_card_fallback_notice %>
+        <div class="swipe-fallback-notice" role="status">
+          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+          <span>Some cards may be outside your group’s budget or size range, but your likes still help shape the results.</span>
+        </div>
+      <% end %>
+
+      <section class="swipe-progress" aria-label="Swiping progress">
+        <div class="swipe-progress__label">
+          <span>Your preferences</span>
+          <strong><%= @completed_count %> of <%= @total_cards %></strong>
+        </div>
+        <progress class="swipe-progress__bar" value="<%= @completed_count %>" max="<%= @total_cards %>" aria-label="<%= @completed_count %> of <%= @total_cards %> cards completed"><%= @completed_count %> / <%= @total_cards %></progress>
+      </section>
+
+      <div class="swipe-card-stack">
+        <div class="swipe-card-shadow swipe-card-shadow--back" aria-hidden="true"></div>
+        <div class="swipe-card-shadow swipe-card-shadow--front" aria-hidden="true"></div>
+
+        <article
+          class="swipe-card"
+          data-swipe-target="card"
+          data-action="pointerdown->swipe#start pointermove->swipe#move pointerup->swipe#finish pointercancel->swipe#cancel">
+          <div class="swipe-stamp swipe-stamp--like" data-swipe-target="likeStamp" aria-hidden="true">LIKE</div>
+          <div class="swipe-stamp swipe-stamp--nope" data-swipe-target="dislikeStamp" aria-hidden="true">PASS</div>
+
+          <% if card.image_url.present? %>
+            <%= image_tag card.image_url, class: "swipe-card__image", alt: card.title, draggable: false %>
+          <% end %>
+
+          <div class="swipe-card__content">
+            <div class="swipe-card__tags">
+              <span class="swipe-card__type"><%= card_type %></span>
+              <% if cuisine.present? %><span class="swipe-card__cuisine"><%= cuisine %></span><% end %>
+            </div>
+            <h2><%= card.title %></h2>
+            <% if show_description %><p><%= description %></p><% end %>
+          </div>
+        </article>
       </div>
-    </div>
 
-    <div class="swipe-card-stack">
-      <div class="swipe-card-shadow swipe-card-shadow--back" aria-hidden="true"></div>
-      <div class="swipe-card-shadow swipe-card-shadow--front" aria-hidden="true"></div>
+      <%# <p class="swipe-instruction"><i class="fa-solid fa-arrows-left-right" aria-hidden="true"></i> Swipe right to like, left to pass — or use the buttons</p> %>
 
-      <article
-        class="card p-4 swipe-card"
-        data-swipe-target="card"
-        data-action="
-          pointerdown->swipe#start
-          pointermove->swipe#move
-          pointerup->swipe#finish
-          pointercancel->swipe#cancel">
-
-        <div
-          class="swipe-stamp swipe-stamp--like"
-          data-swipe-target="likeStamp"
-          aria-hidden="true">
-          LIKE
-        </div>
-
-        <div
-          class="swipe-stamp swipe-stamp--nope"
-          data-swipe-target="dislikeStamp"
-          aria-hidden="true">
-          NOPE
-        </div>
-
-        <% if @current_card.vibe_card.image_url.present? %>
-          <%= image_tag @current_card.vibe_card.image_url,
-                        class: "img-fluid rounded mb-3",
-                        alt: @current_card.vibe_card.title %>
+      <div class="swipe-buttons">
+        <%= button_to participant_swipes_path(@participant.token), method: :post, params: { nomikai_vibe_card_id: @current_card.id, liked: false }, class: "swipe-action swipe-action--pass", data: { swipe_target: "dislikeButton" }, aria: { label: "Pass on #{card.title}" } do %>
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i><span>Pass</span>
         <% end %>
-
-        <h2><%= @current_card.vibe_card.title %></h2>
-        <p><%= @current_card.vibe_card.description %></p>
-      </article>
-    </div>
-
-    <div class="d-flex gap-3 swipe-buttons">
-      <%= button_to "Dislike",
-                    participant_swipes_path(@participant.token),
-                    method: :post,
-                    params: {
-                      nomikai_vibe_card_id: @current_card.id,
-                      liked: false
-                    },
-                    class: "btn btn-danger",
-                    data: { swipe_target: "dislikeButton" } %>
-
-      <%= button_to "Like",
-                    participant_swipes_path(@participant.token),
-                    method: :post,
-                    params: {
-                      nomikai_vibe_card_id: @current_card.id,
-                      liked: true
-                    },
-                    class: "btn btn-success",
-                    data: { swipe_target: "likeButton" } %>
-    </div>
+        <%= button_to participant_swipes_path(@participant.token), method: :post, params: { nomikai_vibe_card_id: @current_card.id, liked: true }, class: "swipe-action swipe-action--like", data: { swipe_target: "likeButton" }, aria: { label: "Like #{card.title}" } do %>
+          <i class="fa-solid fa-heart" aria-hidden="true"></i><span>Like</span>
+        <% end %>
+      </div>
+    </main>
   <% else %>
     <section class="quick-entry quick-entry--finish">
       <span class="quick-entry__check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>

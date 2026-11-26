@@ -8,7 +8,7 @@
     <header class="participant-welcome">
       <span class="participant-eyebrow">SWIPE &amp; BITE</span>
       <h1>Hi, <%= @participant.nickname.to_s.titleize %>.</h1>
-      <p>This page keeps you in the loop on your group’s restaurant and lets you share your feedback.</p>
+      <p>This page keeps you in the loop on your group’s gathering and lets you share your feedback.</p>
     </header>
 
     <section class="participant-event-card" aria-labelledby="participant-event-title">
@@ -40,7 +40,7 @@
     <% if @selected_candidate.present? %>
       <section class="participant-pick-card" aria-labelledby="participant-pick-title">
         <div class="participant-pick-card__intro">
-          <span class="participant-section-label">YOUR GROUP’S PICK</span>
+          <span class="participant-section-label">SELECTED RESTAURANT</span>
           <h2 id="participant-pick-title"><%= @selected_restaurant_name.presence || "Restaurant selected" %></h2>
           <p class="participant-pick-card__cuisine"><span>Cuisine</span><strong><%= @selected_restaurant_cuisine.presence || "Not listed" %></strong></p>
         </div>
@@ -66,7 +66,6 @@
           <div class="participant-feedback">
             <div class="participant-feedback__copy">
               <h3>Would this place work for your group?</h3>
-              <p>Your response helps the organizer understand what the team thinks.</p>
             </div>
             <% if @candidate_vote.present? %>
               <p class="participant-feedback__saved" role="status"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Your response: <strong><%= @candidate_vote.approved? ? "Looks good" : "Try another place" %></strong></p>

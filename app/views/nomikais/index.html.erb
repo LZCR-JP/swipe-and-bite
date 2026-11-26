@@ -17,7 +17,7 @@
           <span class="gathering-history__icon"><i class="fa-solid <%= gathering.meal_period == "lunch" ? "fa-sun" : "fa-moon" %>" aria-hidden="true"></i></span>
           <span class="gathering-history__details">
             <strong><%= gathering.name %></strong>
-            <small><%= gathering.area == "Selected on map" ? "Pinned location" : gathering.area %> · <%= gathering.group_size %> people</small>
+            <small><%= gathering.area == "Selected on map" ? "Pinned location" : gathering.area.capitalize %> · <%= gathering.group_size %> people</small>
             <small><%= l(gathering.matches_found_at.to_date, format: :long) %></small>
           </span>
           <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>

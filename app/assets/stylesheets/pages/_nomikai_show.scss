@@ -448,6 +448,18 @@
 
   p { margin: 0; }
 
+  .recommendation-cuisine {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0 0 8px;
+    color: $text-secondary;
+    font-size: 12px;
+
+    span { color: $text-muted; }
+    strong { color: $text-primary; font-weight: 650; }
+  }
+
   .recommendation-price {
     color: $text-primary;
     font-size: 15px;

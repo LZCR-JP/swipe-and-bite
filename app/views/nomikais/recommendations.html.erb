@@ -18,6 +18,8 @@
             <div class="recommendation-main">
               <div class="recommendation-details">
                 <h2><%= place[:name].presence || "Restaurant" %></h2>
+                <% cuisine = place[:category].presence || place[:cuisine].to_s.delete("_").humanize.presence %>
+                <p class="recommendation-cuisine"><span>Cuisine</span><strong><%= cuisine.presence || "Not listed" %></strong></p>
                 <% start_price = place[:price_range]&.dig("startPrice", "units") %>
                 <% end_price = place[:price_range]&.dig("endPrice", "units") %>
                 <p class="recommendation-price">
