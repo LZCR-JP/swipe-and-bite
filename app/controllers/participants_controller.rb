@@ -39,6 +39,9 @@ class ParticipantsController < ApplicationController
   def show
     @participant = Participant.find_by!(token: params[:token])
     @nomikai = @participant.nomikai
+    @swipes = @participant.swipes.includes(nomikai_vibe_card: :vibe_card).order(:created_at)
+    @liked_vibes = @swipes.filter_map { |swipe| swipe.nomikai_vibe_card.vibe_card.title if swipe.liked? }
+    @passed_vibes = @swipes.filter_map { |swipe| swipe.nomikai_vibe_card.vibe_card.title unless swipe.liked? }
     @selected_candidate = @nomikai.candidates
                                   .includes(:venue)
                                   .find_by(selected: true)

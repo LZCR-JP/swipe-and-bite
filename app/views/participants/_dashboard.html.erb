@@ -6,9 +6,14 @@
 <main class="participant-page">
   <div class="participant-dashboard">
     <header class="participant-welcome">
-      <span class="participant-eyebrow">SWIPE &amp; BITE</span>
-      <h1>Hi, <%= @participant.nickname.to_s.titleize %>.</h1>
-      <p>This page keeps you in the loop on your group’s gathering and lets you share your feedback.</p>
+      <div class="participant-welcome__copy">
+        <span class="participant-eyebrow">SWIPE &amp; BITE</span>
+        <h1>Hi, <%= @participant.nickname.to_s.titleize %>.</h1>
+        <p>This page keeps you up to date on the gathering and lets you share feedback.</p>
+      </div>
+      <%= link_to participant_path(@participant.token), class: "participant-refresh", aria: { label: "Refresh gathering" }, title: "Refresh gathering", data: { turbo: false } do %>
+        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+      <% end %>
     </header>
 
     <section class="participant-event-card" aria-labelledby="participant-event-title">
@@ -53,7 +58,7 @@
         <% end %>
 
         <% if venue&.formatted_address.present? %>
-          <p class="participant-pick-card__address"><i class="fa-solid fa-map-pin" aria-hidden="true"></i><%= venue.formatted_address %></p>
+          <p class="participant-pick-card__address"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><%= venue.formatted_address %></p>
         <% end %>
 
         <% if maps_url.present? %>
@@ -114,6 +119,12 @@
         <div><dt>Budget per person</dt><dd><%= budget.present? ? "¥#{number_with_delimiter(budget)}" : "Flexible" %></dd></div>
         <div><dt>Dietary needs</dt><dd><%= @participant.restrictions.present? ? @participant.restrictions.join(", ") : "None shared" %></dd></div>
         <div><dt>Alcohol</dt><dd><%= @participant.non_drinker ? "No alcohol" : "No preference" %></dd></div>
+        <% if @liked_vibes.any? || @passed_vibes.any? %>
+          <div class="participant-preferences__swipe-row"><dt>Liked (<%= @liked_vibes.size %>)</dt><dd><%= @liked_vibes.any? ? @liked_vibes.join(", ") : "None" %></dd></div>
+          <div class="participant-preferences__swipe-row"><dt>Passed on (<%= @passed_vibes.size %>)</dt><dd><%= @passed_vibes.any? ? @passed_vibes.join(", ") : "None" %></dd></div>
+        <% else %>
+          <div class="participant-preferences__swipe-row"><dt>Swipe results</dt><dd>No cards swiped yet</dd></div>
+        <% end %>
       </dl>
     </details>
   </div>
