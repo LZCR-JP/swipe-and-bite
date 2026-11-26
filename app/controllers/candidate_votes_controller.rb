@@ -1,6 +1,6 @@
 class CandidateVotesController < ApplicationController
   before_action :set_participant
-  before_action :ensure_open
+  before_action :ensure_feedback_open
 
   def create
     recorder = CandidateVoteRecorder.new(
@@ -26,10 +26,10 @@ class CandidateVotesController < ApplicationController
     @nomikai = @participant.nomikai
   end
 
-  def ensure_open
-    return if @nomikai.ongoing? || @nomikai.finished?
+  def ensure_feedback_open
+    return if @nomikai.restaurant_feedback_open?
 
-    render plain: "This nomikai is closed.",
+    render plain: "Restaurant feedback is not open for this event.",
            status: :forbidden
   end
 end

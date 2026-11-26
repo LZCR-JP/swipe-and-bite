@@ -12,6 +12,10 @@ class Nomikai < ApplicationRecord
     matches_found_at.present?
   end
 
+  def restaurant_feedback_open?
+    finished? && candidates.where(selected: true).exists?
+  end
+
   JOIN_CODE_PREFIX = "SWIPE".freeze
   JOIN_CODE_LENGTH = 4
 

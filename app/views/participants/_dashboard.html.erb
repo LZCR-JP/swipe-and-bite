@@ -62,7 +62,7 @@
           <% end %>
         <% end %>
 
-        <% if @nomikai.ongoing? || @nomikai.finished? %>
+        <% if @nomikai.restaurant_feedback_open? %>
           <div class="participant-feedback">
             <div class="participant-feedback__copy">
               <h3>Would this place work for your group?</h3>
