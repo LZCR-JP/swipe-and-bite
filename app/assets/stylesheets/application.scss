@@ -11,3 +11,9 @@
 @import "components/index";
 @import "pages/index";
 @import "pages/ui_polish";
+@import "pages/auth";
+
+body {
+  background: $background-cream;
+  color: $text-primary;
+}
