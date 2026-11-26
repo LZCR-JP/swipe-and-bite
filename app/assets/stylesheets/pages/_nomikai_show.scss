@@ -565,7 +565,34 @@
 
 .recommendations-empty {
   h2 { font-size: 18px; margin: 0 0 6px; }
-  p { margin: 0; color: $text-secondary; font-size: 14px; }
+  p { margin: 0; color: $text-secondary; font-size: 14px; line-height: 1.5; }
+}
+
+.recommendations-empty__action {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 14px;
+  padding: 0 16px;
+  border: 1px solid $brand-orange;
+  border-radius: 10px;
+  background: $brand-orange;
+  color: $background-white;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+
+  &:hover {
+    border-color: $brand-orange-hover;
+    background: $brand-orange-hover;
+    color: $background-white;
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(255, 105, 0, 0.35);
+    outline-offset: 2px;
+  }
 }
 
 @media (min-width: 600px) {

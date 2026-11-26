@@ -74,6 +74,9 @@ body:has(.meeting-create, .host-lobby, .gathering-hub) { background: #fff; }
   &__copy { background: var(--sb-raised); border: 1px solid var(--sb-line); }
   &__copy-message { grid-column: 1 / -1; color: var(--sb-muted); font-size: 12px; }
   &__copy-message:empty { display: none; }
+  &__share { margin: 0 0 14px; }
+  &__share-link { width: 100%; min-height: 44px; border: 1px solid var(--sb-line); border-radius: 12px; background: var(--sb-raised); color: var(--sb-accent); font-size: 14px; font-weight: 650; cursor: pointer; }
+  &__share-link:hover { background: var(--sb-bg); }
   &__legacy { color: var(--sb-accent); display: inline-block; margin-bottom: 8px; }
   &__swipe { display: flex; min-height: 46px; align-items: center; gap: 9px; padding: 11px 13px; border: 1px solid var(--sb-line); border-radius: 12px; background: var(--sb-raised); color: var(--sb-text); font-weight: 650; text-decoration: none; }
   &__swipe:hover { color: var(--sb-accent); }

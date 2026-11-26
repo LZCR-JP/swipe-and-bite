@@ -56,6 +56,10 @@
         <button type="button" class="host-lobby__icon host-lobby__copy" data-action="click->clipboard#copy" aria-label="Copy join code"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
         <small class="host-lobby__copy-message" data-clipboard-target="message" aria-live="polite"></small>
       </div>
+      <div class="host-lobby__share" data-controller="clipboard" data-clipboard-text-value="<%= request.base_url %><%= join_path(@nomikai.share_token) %>">
+        <button type="button" class="host-lobby__share-link" data-action="click->clipboard#copy">Copy invite link</button>
+        <small class="host-lobby__copy-message" data-clipboard-target="message" aria-live="polite"></small>
+      </div>
       <%= link_to "Open invite link", join_path(@nomikai.share_token), class: "host-lobby__legacy" unless @nomikai.join_code.match?(/\A[0-9]{4}\z/) %>
       <%= link_to join_with_code_path(@nomikai.formatted_join_code), class: "host-lobby__swipe" do %>
         <i class="fa-regular fa-heart" aria-hidden="true"></i> Start your swipes <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>

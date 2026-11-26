@@ -80,8 +80,19 @@
       <p class="recommendations-attribution" translate="no">Google Maps</p>
     <% else %>
       <section class="recommendations-empty">
-        <h2>No restaurants found</h2>
-        <p><%= @reshuffled ? "No more matches on this page." : "Try reviewing the area or budget." %></p>
+        <h2><%= @reshuffled ? "No more matches on this search" : "We couldn’t find a match yet" %></h2>
+        <p>
+          <% if @nomikai.ongoing? %>
+            Try a nearby area or adjust the budget, then search again.
+          <% else %>
+            Go back to your gathering to start a fresh search.
+          <% end %>
+        </p>
+        <% if @nomikai.ongoing? %>
+          <%= link_to "Adjust area or budget", edit_nomikai_path(@nomikai), class: "recommendations-empty__action" %>
+        <% else %>
+          <%= link_to "Back to gathering", nomikai_path(@nomikai), class: "recommendations-empty__action" %>
+        <% end %>
       </section>
     <% end %>
 
