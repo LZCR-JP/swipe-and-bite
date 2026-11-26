@@ -277,9 +277,15 @@ class GooglePlacesSearch
   def save_candidates(places)
     @nomikai.with_lock do
       places.each do |place|
-        venue = Venue.find_or_create_by!(
-          google_place_id: place.fetch("id")
+        venue = Venue.find_or_initialize_by(google_place_id: place.fetch("id"))
+        venue.assign_attributes(
+          name: place.dig("displayName", "text").presence || venue.name,
+          primary_type: place.dig("primaryTypeDisplayName", "text").presence || venue.primary_type,
+          formatted_address: place["formattedAddress"].presence || venue.formatted_address,
+          google_maps_uri: place["googleMapsUri"].presence || venue.google_maps_uri,
+          price_level: place["priceLevel"].presence || venue.price_level
         )
+        venue.save! if venue.new_record? || venue.changed?
 
         @nomikai.candidates.find_or_create_by!(
           venue: venue

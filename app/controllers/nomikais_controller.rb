@@ -13,6 +13,25 @@ class NomikaisController < ApplicationController
       return
     end
     @participants = @nomikai.participants.order(:created_at)
+    @selected_candidate = @nomikai.candidates
+                                   .includes(:venue, :candidate_votes)
+                                   .find_by(selected: true)
+    @selected_restaurant_name = @selected_candidate&.venue&.name
+
+    if @selected_candidate && (@selected_candidate.venue.name.blank? || @selected_candidate.venue.primary_type.blank?)
+      venue = @selected_candidate.venue
+      details = GooglePlaceDetails.new(venue.google_place_id).call || {}
+      venue.assign_attributes(
+        name: venue.name.presence || details[:name],
+        primary_type: venue.primary_type.presence || details[:primary_type],
+        formatted_address: venue.formatted_address.presence || details[:formatted_address],
+        google_maps_uri: venue.google_maps_uri.presence || details[:google_maps_uri],
+        price_level: venue.price_level.presence || details[:price_level],
+        rating: venue.rating.presence || details[:rating]
+      )
+      venue.save! if venue.changed?
+      @selected_restaurant_name = venue.name
+    end
   end
 
   def new

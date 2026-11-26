@@ -1,0 +1,172 @@
+.auth-page {
+  width: 100%;
+  padding: 28px 16px 112px;
+  color: $text-primary;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 470px;
+  margin: 0 auto;
+  padding: 30px;
+  border: 1px solid $border-light;
+  border-radius: 22px;
+  background: $background-white;
+  box-shadow: 0 10px 30px rgba(41, 33, 29, 0.06);
+
+  &__header {
+    margin-bottom: 24px;
+
+    h1 {
+      margin: 7px 0 8px;
+      color: $text-primary;
+      font-size: clamp(27px, 6vw, 34px);
+      font-weight: 750;
+      line-height: 1.15;
+      letter-spacing: -0.7px;
+    }
+
+    p {
+      margin: 0;
+      color: $text-secondary;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+  }
+
+  form { margin: 0 0 18px; }
+
+  .form-group,
+  .field { margin-bottom: 16px; }
+
+  label {
+    margin-bottom: 6px;
+    color: $text-primary;
+    font-size: 13px;
+    font-weight: 650;
+  }
+
+  input:not([type="checkbox"]):not([type="submit"]),
+  .form-control {
+    min-height: 46px;
+    border: 1px solid $border-light;
+    border-radius: 10px;
+    background: #fffdfb;
+    color: $text-primary;
+    box-shadow: none;
+
+    &:focus {
+      border-color: $brand-orange;
+      box-shadow: 0 0 0 3px rgba($brand-orange, 0.14);
+    }
+  }
+
+  input[type="checkbox"] { accent-color: $brand-orange; }
+
+  .form-actions,
+  .actions { margin-top: 20px; }
+
+  .form-actions button,
+  .actions input[type="submit"],
+  button[type="submit"]:not(.auth-card__delete):not(.auth-card__sign-out) {
+    display: block;
+    width: 100%;
+    min-height: 50px;
+    padding: 12px 16px;
+    border: 1px solid $brand-orange;
+    border-radius: 12px;
+    background: $brand-orange;
+    color: $background-white;
+    font-size: 15px;
+    font-weight: 750;
+    transition: background-color 150ms ease, transform 150ms ease;
+
+    &:hover,
+    &:focus-visible {
+      border-color: $brand-orange-hover;
+      background: $brand-orange-hover;
+      color: $background-white;
+    }
+
+    &:active { transform: scale(0.99); }
+  }
+
+  .form-check { margin: 0 0 16px; }
+
+  a,
+  &__back { color: $brand-orange-hover; text-underline-offset: 3px; }
+
+  > p { margin: 10px 0 0; color: $text-secondary; font-size: 13px; }
+
+  #error_explanation,
+  .alert,
+  .invalid-feedback {
+    border-radius: 10px;
+    color: #a12f2f;
+    font-size: 13px;
+  }
+
+  #error_explanation {
+    margin-bottom: 18px;
+    padding: 13px 15px;
+    border: 1px solid #f3caca;
+    background: #fff4f2;
+
+    h2 { margin: 0 0 7px; font-size: 14px; }
+    ul { margin: 0; padding-left: 18px; }
+  }
+
+  &__danger {
+    margin: 24px 0 16px;
+    padding: 16px;
+    border: 1px solid #f2d2ce;
+    border-radius: 14px;
+    background: #fff8f6;
+
+    h2 { margin: 0 0 5px; color: #8f3028; font-size: 16px; }
+    p { margin: 0 0 12px; color: $text-secondary; font-size: 13px; line-height: 1.45; }
+  }
+
+  &__delete {
+    min-height: 42px;
+    padding: 9px 13px;
+    border: 1px solid #e6b7b1;
+    border-radius: 10px;
+    background: $background-white;
+    color: #a12f2f;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  &__back { display: inline-block; margin: 4px 0 12px; font-size: 13px; }
+
+  &__sign-out {
+    display: block;
+    width: 100%;
+    min-height: 46px;
+    border: 1px solid $border-light;
+    border-radius: 11px;
+    background: $background-white;
+    color: $text-primary;
+    font-weight: 700;
+  }
+}
+
+.auth-eyebrow {
+  color: $brand-orange-hover;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.auth-page a { color: $brand-orange-hover; }
+
+@media (max-width: 520px) {
+  .auth-page { padding: 18px 14px 108px; }
+  .auth-card { padding: 23px 19px; border-radius: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-card .form-actions button,
+  .auth-card .actions input[type="submit"] { transition: none; }
+}

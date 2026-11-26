@@ -1,4 +1,10 @@
-<h2>Edit <%= resource_name.to_s.humanize %></h2>
+<main class="auth-page">
+  <section class="auth-card">
+    <header class="auth-card__header">
+      <span class="auth-eyebrow">YOUR ACCOUNT</span>
+      <h1>Account settings</h1>
+      <p>Update your sign-in details or sign out of Swipe &amp; Bite.</p>
+    </header>
 
 <%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
   <%= f.error_notification %>
@@ -28,13 +34,18 @@
   </div>
 <% end %>
 
-<h3>Cancel my account</h3>
+    <section class="auth-card__danger">
+      <h2>Close your account</h2>
+      <p>This permanently removes your account and its profile details.</p>
 
-<div>Unhappy? <%= button_to "Cancel my account", registration_path(resource_name), data: { confirm: "Are you sure?", turbo_confirm: "Are you sure?" }, method: :delete %></div>
+      <%= button_to "Cancel my account", registration_path(resource_name), data: { confirm: "Are you sure?", turbo_confirm: "Are you sure?" }, method: :delete, class: "auth-card__delete" %>
+    </section>
 
-<%= link_to "Back", :back %>
+    <%= link_to "Back", :back, class: "auth-card__back" %>
 
-<%= button_to "Sign out",
-              destroy_user_session_path,
-              method: :delete,
-              class: "btn btn-outline-secondary w-100 mt-3" %>
+    <%= button_to "Sign out",
+                  destroy_user_session_path,
+                  method: :delete,
+                  class: "auth-card__sign-out" %>
+  </section>
+</main>

@@ -1,70 +1,178 @@
 .swipes-page {
+  width: 100%;
   max-width: 620px;
   margin: 0 auto;
-  padding-bottom: 40px;
+  padding: 22px 18px 116px;
+  color: $text-primary;
+}
+
+.swipe-experience {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.swipe-page-header {
+  margin-bottom: 18px;
+
+  &__eyebrow {
+    color: $brand-orange-hover;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+  }
+
+  h1 {
+    margin: 6px 0 7px;
+    color: $text-primary;
+    font-size: clamp(25px, 6vw, 32px);
+    font-weight: 750;
+    letter-spacing: -0.7px;
+    line-height: 1.15;
+  }
+
+  p {
+    max-width: 52ch;
+    margin: 0;
+    color: $text-secondary;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+.swipe-fallback-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 0 0 15px;
+  padding: 11px 12px;
+  border: 1px solid $border-light;
+  border-radius: 12px;
+  background: $background-soft;
+  color: $text-secondary;
+  font-size: 12px;
+  line-height: 1.45;
+
+  i { margin-top: 2px; color: $brand-orange-hover; }
+}
+
+.swipe-progress {
+  margin: 0 0 16px;
+
+  &__label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 7px;
+    color: $text-secondary;
+    font-size: 13px;
+  }
+
+  &__label strong {
+    color: $text-primary;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__bar {
+    display: block;
+    width: 100%;
+    height: 8px;
+    overflow: hidden;
+    border: 0;
+    border-radius: 999px;
+    appearance: none;
+    background: $border-light;
+
+    &::-webkit-progress-bar { border-radius: 999px; background: $border-light; }
+    &::-webkit-progress-value { border-radius: 999px; background: $brand-orange; transition: width 220ms ease; }
+    &::-moz-progress-bar { border-radius: 999px; background: $brand-orange; }
+  }
 }
 
 .swipe-card-stack {
   position: relative;
   isolation: isolate;
-  margin: 28px 0 24px;
+  margin: 0 0 20px;
+  padding: 0 2px 14px;
 }
 
 .swipe-card-shadow {
   position: absolute;
-  inset: 8px 14px -8px;
+  inset: 8px 14px -1px;
   border: 1px solid $border-light;
-  border-radius: 20px;
+  border-radius: 22px;
   background: $background-white;
-  box-shadow: 0 8px 22px rgba(41, 33, 29, 0.08);
+  box-shadow: 0 8px 22px rgba(41, 33, 29, 0.06);
   pointer-events: none;
 
-  &--front {
-    z-index: 1;
-    transform: translateY(7px) scale(0.975);
-  }
-
-  &--back {
-    z-index: 0;
-    transform: translateY(14px) scale(0.95);
-    opacity: 0.75;
-  }
+  &--front { z-index: 1; transform: translateY(7px) scale(0.975); }
+  &--back { z-index: 0; transform: translateY(14px) scale(0.95); opacity: 0.7; }
 }
 
 .swipe-card {
   position: relative;
   z-index: 2;
-  min-height: 400px;
   overflow: hidden;
   border: 1px solid $border-light;
-  border-radius: 20px;
+  border-radius: 22px;
   background: $background-white;
-  box-shadow: 0 12px 30px rgba(41, 33, 29, 0.12);
+  box-shadow: 0 12px 30px rgba(41, 33, 29, 0.1);
   cursor: grab;
   touch-action: pan-y;
   user-select: none;
   will-change: transform;
 
-  img {
+  &__image {
+    display: block;
     width: 100%;
-    max-height: 360px;
+    height: clamp(230px, 68vw, 340px);
     object-fit: cover;
     pointer-events: none;
   }
 
+  &__content { padding: 17px 19px 20px; }
+
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 8px;
+  }
+
+  &__type {
+    color: $brand-orange-hover;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.1px;
+  }
+
+  &__cuisine {
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: $background-cream;
+    color: $text-secondary;
+    font-size: 11px;
+    font-weight: 650;
+  }
+
   h2 {
-    margin-top: 8px;
+    margin: 0;
     color: $text-primary;
+    font-size: 23px;
+    font-weight: 700;
+    line-height: 1.25;
   }
 
   p {
+    margin: 7px 0 0;
     color: $text-secondary;
+    font-size: 14px;
+    line-height: 1.5;
   }
 
-  &.is-dragging {
-    cursor: grabbing;
-    transition: none;
-  }
+  &.is-dragging { cursor: grabbing; transition: none; }
 }
 
 .swipe-stamp {
@@ -82,8 +190,8 @@
 
   &--like {
     left: 22px;
-    color: $success;
-    border-color: $success;
+    color: $brand-orange;
+    border-color: $brand-orange;
     transform: rotate(-12deg);
   }
 
@@ -96,38 +204,82 @@
 }
 
 .swipe-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
   form {
-    flex: 1;
+    display: flex;
+    min-width: 0;
     margin: 0;
   }
+}
 
-  button {
-    width: 100%;
-    min-height: 54px;
-    border-radius: 14px;
-    font-size: 17px;
-    font-weight: 700;
+.swipe-action {
+  display: flex;
+  width: 100%;
+  min-height: 54px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 15px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: transform 150ms ease, background-color 150ms ease, border-color 150ms ease;
+
+  i { font-size: 17px; }
+
+  &:active { transform: scale(0.98); }
+
+  &--pass {
+    border-color: $border-light;
+    background: $background-white;
+    color: $text-secondary;
+
+    &:hover { border-color: $text-muted; background: $background-cream; }
   }
+
+  &--like {
+    background: $brand-orange;
+    color: $background-white;
+
+    &:hover { background: $brand-orange-hover; }
+  }
+}
+
+.swipe-instruction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: -4px 0 13px;
+  color: $text-muted;
+  font-size: 12px;
+  text-align: center;
+
+  i { color: $brand-orange-hover; }
 }
 
 @media (max-width: 600px) {
   .swipes-page {
-    padding-right: 18px;
-    padding-left: 18px;
+    padding: 18px 18px 112px;
   }
 
-  .swipe-card {
-    min-height: 340px;
+  .swipe-page-header { margin-bottom: 15px; }
+  .swipe-card__image { height: clamp(220px, 68vw, 300px); }
+  .swipe-card__content { padding: 15px 16px 17px; }
+  .swipe-card h2 { font-size: 21px; }
+  .swipe-action { min-height: 52px; font-size: 15px; }
+  .swipe-buttons { gap: 10px; }
+  .swipe-card-stack { margin-bottom: 18px; }
+}
 
-    img {
-      max-height: 300px;
-    }
-  }
-
-  .swipe-stamp {
-    top: 18px;
-    font-size: 24px;
-  }
+@media (prefers-reduced-motion: reduce) {
+  .swipe-progress__bar::-webkit-progress-value,
+  .swipe-action { transition: none; }
 }
 
 .swipe-back-button {

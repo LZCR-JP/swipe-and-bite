@@ -3,6 +3,10 @@
 <% total = @nomikai.group_size %>
 <% progress = total.positive? ? [(completed.to_f / total * 100).round, 100].min : 0 %>
 <% accepting = @nomikai.accepting_participants? %>
+<% selected_votes = @selected_candidate ? @selected_candidate.candidate_votes.index_by(&:participant_id) : {} %>
+<% selected_vote_count = selected_votes.size %>
+<% selected_approvals = selected_votes.values.count(&:approved?) %>
+<% selected_alternatives = selected_vote_count - selected_approvals %>
 <main class="host-lobby">
   <header class="host-lobby__top">
     <%= link_to nomikais_path, class: "host-lobby__icon", aria: { label: "Back to gatherings" } do %>
@@ -25,9 +29,9 @@
   <div class="host-lobby__meta">
     <span><i class="fa-solid fa-location-dot" aria-hidden="true"></i>
       <% if @nomikai.latitude.present? && @nomikai.longitude.present? %>
-        <%= link_to (@nomikai.area == "Selected on map" ? "Meeting point" : @nomikai.area), "https://www.google.com/maps/search/?api=1&query=#{ERB::Util.url_encode("#{@nomikai.latitude},#{@nomikai.longitude}")}", target: "_blank", rel: "noopener noreferrer" %>
+        <%= link_to (@nomikai.area == "Selected on map" ? "Meeting point" : @nomikai.area.capitalize), "https://www.google.com/maps/search/?api=1&query=#{ERB::Util.url_encode("#{@nomikai.latitude},#{@nomikai.longitude}")}", target: "_blank", rel: "noopener noreferrer" %>
       <% else %>
-        <%= @nomikai.area %>
+        <%= @nomikai.area.capitalize %>
       <% end %>
     </span>
     <span><i class="fa-solid fa-user-group" aria-hidden="true"></i> <%= total %> people</span>
@@ -37,13 +41,64 @@
   </div>
 
   <% if @nomikai.finished? %>
-    <section class="host-lobby__invite">
-      <h2><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Matches found</h2>
-      <p>Finished <%= l(@nomikai.matches_found_at, format: :short) %></p>
-      <p>Search again to refresh restaurant recommendations.</p>
-    </section>
+    <% if @selected_candidate %>
+      <% selected_venue = @selected_candidate.venue %>
+      <% maps_url = selected_venue.google_maps_uri.presence || "https://www.google.com/maps/search/?api=1&query=restaurant&query_place_id=#{ERB::Util.url_encode(selected_venue.google_place_id)}" %>
+      <section class="host-lobby__selected" aria-labelledby="selected-restaurant-heading">
+        <div class="host-lobby__selected-heading">
+          <div>
+            <span class="host-lobby__selected-label">SELECTED RESTAURANT</span>
+            <h2 id="selected-restaurant-heading"><%= @selected_restaurant_name.presence || "Restaurant selected" %></h2>
+            <p class="host-lobby__selected-cuisine"><span>Cuisine</span><strong><%= selected_venue.primary_type.presence || "Not listed" %></strong></p>
+            <% if selected_venue.formatted_address.present? %>
+              <p><%= selected_venue.formatted_address %></p>
+            <% else %>
+            <% end %>
+          </div>
+          <span class="host-lobby__selected-badge"><i class="fa-solid fa-check" aria-hidden="true"></i> Selected</span>
+        </div>
+
+        <%= link_to "Open in Google Maps", maps_url, class: "host-lobby__maps-link", target: "_blank", rel: "noopener noreferrer" %>
+
+        <div class="host-lobby__feedback">
+          <div class="host-lobby__section-head">
+            <div>
+              <h3>Team feedback</h3>
+              <p><%= selected_vote_count %> of <%= people.size %> joined teammates responded</p>
+            </div>
+            <strong><%= selected_approvals %> Liked</strong>
+          </div>
+          <% if people.any? %>
+            <progress class="host-lobby__progress" value="<%= [selected_vote_count, people.size].min %>" max="<%= people.size %>" aria-label="Team feedback received"><%= (selected_vote_count.to_f / people.size * 100).round %>%</progress>
+            <p class="host-lobby__vote-summary"><%= selected_alternatives %> asked for another option</p>
+            <div class="host-lobby__people">
+              <% people.each do |participant| %>
+                <% vote = selected_votes[participant.id] %>
+                <div class="host-lobby__person">
+                  <span class="host-lobby__avatar" aria-hidden="true"><%= participant.nickname.to_s.first.to_s.upcase %></span>
+                  <strong><%= participant.nickname.capitalize %></strong>
+                  <% if vote %>
+                    <span class="host-lobby__vote-status <%= vote.approved? ? "host-lobby__vote-status--approved" : "host-lobby__vote-status--alternative" %>"><%= vote.approved? ? "Approved!" : "Wants another option" %></span>
+                  <% else %>
+                    <span class="host-lobby__pending">Waiting</span>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p>There are no joined teammates to ask yet.</p>
+          <% end %>
+        </div>
+      </section>
+    <% else %>
+      <section class="host-lobby__invite">
+        <h2><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Matches are ready</h2>
+        <p>Choose a restaurant from the match list. Your choice will appear here so you can share it and follow team feedback.</p>
+      </section>
+    <% end %>
     <section class="host-lobby__action">
-      <%= button_to "View fresh matches", recommendations_nomikai_path(@nomikai), method: :post, class: "host-lobby__primary", form: { data: { turbo: false, controller: "match-loading", action: "submit->match-loading#start pageshow@window->match-loading#reset turbo:before-cache@document->match-loading#reset" } } %>
+      <%= button_to (@selected_candidate ? "Change restaurant" : "Choose a restaurant"), recommendations_nomikai_path(@nomikai), method: :post, class: "host-lobby__primary", form: { data: { turbo: false, controller: "match-loading", action: "submit->match-loading#start pageshow@window->match-loading#reset turbo:before-cache@document->match-loading#reset" } } %>
+      <% if @selected_candidate %><p>You can change your pick any time. Your team can review it from their event page.</p><% end %>
     </section>
   <% else %>
     <div class="gathering-status"><span class="gathering-status__dot"></span> Ongoing gathering</div>
@@ -54,6 +109,10 @@
       <div class="host-lobby__code-row" data-controller="clipboard">
         <input type="text" class="host-lobby__code <%= "host-lobby__code--legacy" unless @nomikai.join_code.match?(/\A[0-9]{4}\z/) %>" value="<%= @nomikai.formatted_join_code %>" readonly aria-label="Join code" data-clipboard-target="source">
         <button type="button" class="host-lobby__icon host-lobby__copy" data-action="click->clipboard#copy" aria-label="Copy join code"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
+        <small class="host-lobby__copy-message" data-clipboard-target="message" aria-live="polite"></small>
+      </div>
+      <div class="host-lobby__share" data-controller="clipboard" data-clipboard-text-value="<%= request.base_url %><%= join_path(@nomikai.share_token) %>">
+        <button type="button" class="host-lobby__share-link" data-action="click->clipboard#copy">Copy invite link</button>
         <small class="host-lobby__copy-message" data-clipboard-target="message" aria-live="polite"></small>
       </div>
       <%= link_to "Open invite link", join_path(@nomikai.share_token), class: "host-lobby__legacy" unless @nomikai.join_code.match?(/\A[0-9]{4}\z/) %>

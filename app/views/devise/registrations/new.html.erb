@@ -1,4 +1,10 @@
-<h2>Sign up</h2>
+<main class="auth-page">
+  <section class="auth-card">
+    <header class="auth-card__header">
+      <span class="auth-eyebrow">SWIPE &amp; BITE</span>
+      <h1>Create your account</h1>
+      <p>Plan a meal together and keep your group’s restaurant choices in one place.</p>
+    </header>
 
 <%= simple_form_for(resource, as: resource_name,
              url: registration_path(resource_name)) do |f| %>
@@ -39,3 +45,5 @@
 <% end %>
 
 <%= render "devise/shared/links" %>
+  </section>
+</main>
