@@ -27,7 +27,7 @@ class CandidateVotesController < ApplicationController
   end
 
   def ensure_open
-    return if @nomikai.status == "open"
+    return if @nomikai.ongoing? || @nomikai.finished?
 
     render plain: "This nomikai is closed.",
            status: :forbidden

@@ -68,6 +68,21 @@ body:has(.meeting-create, .host-lobby, .gathering-hub) { background: #fff; }
   &__meta i { margin-right: 3px; }
   &__meta a { color: inherit; text-underline-offset: 3px; }
   &__invite { margin-top: 22px; background: var(--sb-surface); border-radius: 20px; padding: 18px; }
+  &__selected { margin-top: 22px; padding: 18px; border: 1px solid var(--sb-line); border-radius: 20px; background: var(--sb-surface); }
+  &__selected-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  &__selected-label { display: block; margin-bottom: 6px; color: var(--sb-accent); font-size: 11px; font-weight: 750; letter-spacing: .12em; }
+  &__selected-heading h2 { margin: 0 0 5px; overflow-wrap: anywhere; }
+  &__selected-heading p { overflow-wrap: anywhere; }
+  &__selected-badge { display: inline-flex; flex-shrink: 0; align-items: center; gap: 5px; padding: 6px 10px; border-radius: 999px; background: #e5f4e9; color: #287a43; font-size: 11px; font-weight: 700; }
+  &__maps-link { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; margin-top: 15px; padding: 0 14px; border-radius: 12px; background: var(--sb-orange); color: #fff; font-weight: 700; text-decoration: none; }
+  &__maps-link:hover { background: #e95f00; color: #fff; }
+  &__feedback { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--sb-line); }
+  &__feedback h3 { margin: 0; font-size: 15px; font-weight: 700; }
+  &__feedback .host-lobby__section-head strong { color: var(--sb-accent); font-size: 13px; white-space: nowrap; }
+  &__vote-summary { margin-top: 8px !important; }
+  &__vote-status { font-size: 11px; font-weight: 700; text-align: right; }
+  &__vote-status--approved { color: #287a43; }
+  &__vote-status--alternative { color: #a65d20; }
   &__code-row { display: grid; grid-template-columns: minmax(0, 1fr) 44px; align-items: center; gap: 10px; margin: 15px 0; }
   &__code { width: 100%; min-width: 0; font-size: clamp(32px, 10vw, 46px); font-weight: 750; letter-spacing: .15em; font-variant-numeric: tabular-nums; line-height: 1.2; color: var(--sb-text); background: transparent; padding: 0; border: 0; }
   &__code--legacy { font-size: 20px; letter-spacing: .04em; }

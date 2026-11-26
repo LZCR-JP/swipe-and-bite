@@ -62,6 +62,15 @@
               <% end %>
             </div>
 
+            <% if place[:selected] %>
+              <p class="recommendation-selected-status"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Selected for this gathering</p>
+            <% else %>
+              <%= button_to "Choose this restaurant", select_candidate_nomikai_path(@nomikai, candidate_id: place[:candidate_id]),
+                            method: :patch,
+                            class: "recommendation-select-button",
+                            form: { class: "recommendation-select-form" } %>
+            <% end %>
+
             <% Array(place[:attributions]).each do |attribution| %>
               <% if attribution["provider"].present? %>
                 <p class="recommendations-attribution">

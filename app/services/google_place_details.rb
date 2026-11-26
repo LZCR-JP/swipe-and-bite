@@ -15,8 +15,17 @@ class GooglePlaceDetails
     response = get(build_request)
     return log_failure(response) unless response.is_a?(Net::HTTPSuccess)
 
-    JSON.parse(response.body).dig("displayName", "text")
-  rescue JSON::ParserError, Net::OpenTimeout, Net::ReadTimeout, SocketError => e
+    place = JSON.parse(response.body)
+    {
+      name: place.dig("displayName", "text"),
+      primary_type: place.dig("primaryTypeDisplayName", "text"),
+      formatted_address: place["formattedAddress"],
+      google_maps_uri: place["googleMapsUri"],
+      price_level: place["priceLevel"],
+      rating: place["rating"]
+    }.compact
+  rescue JSON::ParserError, Net::OpenTimeout, Net::ReadTimeout, SocketError,
+         IOError, SystemCallError, OpenSSL::SSL::SSLError => e
     Rails.logger.warn("Google Place Details lookup failed: #{e.class}")
     nil
   end
@@ -28,13 +37,17 @@ class GooglePlaceDetails
   end
 
   def uri
-    @uri ||= URI("#{BASE_URL}/#{URI::DEFAULT_PARSER.escape(@place_id)}")
+    @uri ||= begin
+      request_uri = URI("#{BASE_URL}/#{URI::DEFAULT_PARSER.escape(@place_id)}")
+      request_uri.query = URI.encode_www_form(languageCode: "en")
+      request_uri
+    end
   end
 
   def build_request
     request = Net::HTTP::Get.new(uri)
     request["X-Goog-Api-Key"] = api_key
-    request["X-Goog-FieldMask"] = "displayName"
+    request["X-Goog-FieldMask"] = "displayName,primaryTypeDisplayName,formattedAddress,googleMapsUri,priceLevel,rating"
     request
   end
 

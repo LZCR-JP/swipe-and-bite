@@ -43,6 +43,23 @@ class ParticipantsController < ApplicationController
                                   .includes(:venue)
                                   .find_by(selected: true)
 
+    if @selected_candidate && (@selected_candidate.venue.name.blank? || @selected_candidate.venue.primary_type.blank?)
+      venue = @selected_candidate.venue
+      details = GooglePlaceDetails.new(venue.google_place_id).call || {}
+      venue.assign_attributes(
+        name: venue.name.presence || details[:name],
+        primary_type: venue.primary_type.presence || details[:primary_type],
+        formatted_address: venue.formatted_address.presence || details[:formatted_address],
+        google_maps_uri: venue.google_maps_uri.presence || details[:google_maps_uri],
+        price_level: venue.price_level.presence || details[:price_level],
+        rating: venue.rating.presence || details[:rating]
+      )
+      venue.save! if venue.changed?
+    end
+
+    @selected_restaurant_name = @selected_candidate&.venue&.name
+    @selected_restaurant_cuisine = @selected_candidate&.venue&.primary_type
+
     @candidate_vote = if @selected_candidate
                         @participant.candidate_votes.find_by(
                           candidate: @selected_candidate

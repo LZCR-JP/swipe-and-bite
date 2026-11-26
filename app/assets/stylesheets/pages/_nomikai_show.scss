@@ -524,6 +524,35 @@
   &:focus-visible { outline: 2px solid $brand-orange; outline-offset: 2px; }
 }
 
+.recommendation-select-form { margin: 10px 0 0; }
+
+.recommendation-select-button {
+  display: block;
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 16px;
+  border: 1px solid $brand-orange;
+  border-radius: 12px;
+  background: $brand-orange;
+  color: $background-white;
+  font-size: 14px;
+  font-weight: 750;
+  cursor: pointer;
+
+  &:hover { border-color: $brand-orange-hover; background: $brand-orange-hover; }
+  &:focus-visible { outline: 3px solid rgba(255, 105, 0, 0.35); outline-offset: 2px; }
+}
+
+.recommendation-selected-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 10px 0 0;
+  color: #287a43;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .recommendations-footer {
   margin-top: 22px;
   text-align: center;

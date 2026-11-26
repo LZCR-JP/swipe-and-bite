@@ -1,0 +1,121 @@
+<% venue = @selected_candidate&.venue %>
+<% maps_url = venue&.google_maps_uri.presence || (venue && "https://www.google.com/maps/search/?api=1&query=restaurant&query_place_id=#{ERB::Util.url_encode(venue.google_place_id)}") %>
+<% budget = @participant.budget_max || @nomikai.budget_per_person %>
+<% price_label = venue&.price_level.to_s.delete_prefix("PRICE_LEVEL_").humanize %>
+
+<main class="participant-page">
+  <div class="participant-dashboard">
+    <header class="participant-welcome">
+      <span class="participant-eyebrow">SWIPE &amp; BITE</span>
+      <h1>Hi, <%= @participant.nickname.to_s.titleize %>.</h1>
+      <p>This page keeps you in the loop on your group’s restaurant and lets you share your feedback.</p>
+    </header>
+
+    <section class="participant-event-card" aria-labelledby="participant-event-title">
+      <div class="participant-event-card__heading">
+        <div>
+          <span class="participant-section-label">YOUR GATHERING</span>
+          <h2 id="participant-event-title"><%= @nomikai.name.presence || "#{@nomikai.meal_period.to_s.capitalize} gathering" %></h2>
+        </div>
+        <span class="participant-meal"><i class="fa-solid <%= @nomikai.meal_period == "lunch" ? "fa-sun" : "fa-moon" %>" aria-hidden="true"></i> <%= @nomikai.meal_period.to_s.capitalize %></span>
+      </div>
+      <dl class="participant-event-facts">
+        <div>
+          <dt><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Area</dt>
+          <dd><%= @nomikai.area == "Selected on map" ? "Meeting point" : @nomikai.area.capitalize %></dd>
+        </div>
+        <div>
+          <dt><i class="fa-solid fa-user-group" aria-hidden="true"></i> Group</dt>
+          <dd><%= @nomikai.group_size %> people</dd>
+        </div>
+        <% if @nomikai.budget_per_person.present? %>
+          <div>
+            <dt><i class="fa-solid fa-yen-sign" aria-hidden="true"></i> Budget</dt>
+            <dd>¥<%= number_with_delimiter(@nomikai.budget_per_person) %> / person</dd>
+          </div>
+        <% end %>
+      </dl>
+    </section>
+
+    <% if @selected_candidate.present? %>
+      <section class="participant-pick-card" aria-labelledby="participant-pick-title">
+        <div class="participant-pick-card__intro">
+          <span class="participant-section-label">YOUR GROUP’S PICK</span>
+          <h2 id="participant-pick-title"><%= @selected_restaurant_name.presence || "Restaurant selected" %></h2>
+          <p class="participant-pick-card__cuisine"><span>Cuisine</span><strong><%= @selected_restaurant_cuisine.presence || "Not listed" %></strong></p>
+        </div>
+
+        <% if venue&.rating.present? || venue&.price_level.present? %>
+          <div class="participant-pick-card__highlights">
+            <% if venue.rating.present? %><span><i class="fa-solid fa-star" aria-hidden="true"></i> <%= number_with_precision(venue.rating, precision: 1) %></span><% end %>
+            <% if venue.price_level.present? %><span><%= price_label %> price range</span><% end %>
+          </div>
+        <% end %>
+
+        <% if venue&.formatted_address.present? %>
+          <p class="participant-pick-card__address"><i class="fa-solid fa-map-pin" aria-hidden="true"></i><%= venue.formatted_address %></p>
+        <% end %>
+
+        <% if maps_url.present? %>
+          <%= link_to maps_url, class: "participant-maps-link", target: "_blank", rel: "noopener noreferrer" do %>
+            Open restaurant in Google Maps <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+          <% end %>
+        <% end %>
+
+        <% if @nomikai.ongoing? || @nomikai.finished? %>
+          <div class="participant-feedback">
+            <div class="participant-feedback__copy">
+              <h3>Would this place work for your group?</h3>
+              <p>Your response helps the organizer understand what the team thinks.</p>
+            </div>
+            <% if @candidate_vote.present? %>
+              <p class="participant-feedback__saved" role="status"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Your response: <strong><%= @candidate_vote.approved? ? "Looks good" : "Try another place" %></strong></p>
+            <% end %>
+            <div class="participant-vote-actions">
+              <%= button_to participant_candidate_votes_path(@participant.token), method: :post, params: { candidate_id: @selected_candidate.id, approved: true }, class: "participant-vote-button participant-vote-button--approve" do %>
+                <i class="fa-solid fa-thumbs-up" aria-hidden="true"></i> Looks good
+              <% end %>
+              <%= button_to participant_candidate_votes_path(@participant.token), method: :post, params: { candidate_id: @selected_candidate.id, approved: false }, class: "participant-vote-button participant-vote-button--alternative" do %>
+                I’d like another option
+              <% end %>
+            </div>
+          </div>
+        <% else %>
+          <p class="participant-feedback__closed">Feedback is no longer being collected for this gathering.</p>
+        <% end %>
+      </section>
+    <% else %>
+      <section class="participant-pick-card participant-pick-card--waiting" aria-labelledby="participant-pick-title">
+        <span class="participant-section-label">RESTAURANT UPDATE</span>
+        <% if @nomikai.finished? %>
+          <h2 id="participant-pick-title">Your organizer is reviewing the matches.</h2>
+          <p>Check back here to see the group’s pick and share your feedback.</p>
+        <% elsif @nomikai.ongoing? && @participant.completed_at.present? %>
+          <h2 id="participant-pick-title">Your preferences are saved.</h2>
+          <p>Your organizer will use the group’s swipes to find restaurant matches.</p>
+        <% elsif @nomikai.ongoing? %>
+          <h2 id="participant-pick-title">Help your group choose a place.</h2>
+          <p>Swipe through the cards to share the food and atmosphere you’d enjoy.</p>
+          <%= link_to participant_swipes_path(@participant.token), class: "participant-primary-link" do %>
+            Continue swiping <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+          <% end %>
+        <% else %>
+          <h2 id="participant-pick-title">This gathering has ended.</h2>
+          <p>Your organizer can share any final plans with you directly.</p>
+        <% end %>
+      </section>
+    <% end %>
+
+    <details class="participant-preferences">
+      <summary>
+        <span><i class="fa-solid fa-sliders" aria-hidden="true"></i> Your saved preferences</span>
+        <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+      </summary>
+      <dl>
+        <div><dt>Budget per person</dt><dd><%= budget.present? ? "¥#{number_with_delimiter(budget)}" : "Flexible" %></dd></div>
+        <div><dt>Dietary needs</dt><dd><%= @participant.restrictions.present? ? @participant.restrictions.join(", ") : "None shared" %></dd></div>
+        <div><dt>Alcohol</dt><dd><%= @participant.non_drinker ? "No alcohol" : "No preference" %></dd></div>
+      </dl>
+    </details>
+  </div>
+</main>
