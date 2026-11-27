@@ -65,6 +65,7 @@
           <%= link_to maps_url, class: "participant-maps-link", target: "_blank", rel: "noopener noreferrer" do %>
             Open restaurant in Google Maps <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
           <% end %>
+          <p class="participant-maps-hint">Google Maps opens separately. Return here to share your feedback.</p>
         <% end %>
 
         <% if @nomikai.restaurant_feedback_open? %>
