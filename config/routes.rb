@@ -13,6 +13,7 @@ Rails.application.routes.draw do
     member do
       get :progress
       patch :close
+      post :start_swipes
 
       get :recommendations,
           action: :recommendations_landing,

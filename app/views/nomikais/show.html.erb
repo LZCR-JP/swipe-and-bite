@@ -121,7 +121,7 @@
         <small class="host-lobby__copy-message" data-clipboard-target="message" aria-live="polite"></small>
       </div>
       <%= link_to "Open invite link", join_path(@nomikai.share_token), class: "host-lobby__legacy" unless @nomikai.join_code.match?(/\A[0-9]{4}\z/) %>
-      <%= link_to join_with_code_path(@nomikai.formatted_join_code), class: "host-lobby__swipe" do %>
+      <%= button_to start_swipes_nomikai_path(@nomikai), method: :post, class: "host-lobby__swipe" do %>
         <i class="fa-regular fa-heart" aria-hidden="true"></i> Start your swipes <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
       <% end %>
     <% else %>
