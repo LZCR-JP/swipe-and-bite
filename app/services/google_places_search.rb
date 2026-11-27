@@ -174,7 +174,7 @@ class GooglePlacesSearch
   def search_filters
     payload = {
       includedType: "restaurant",
-      languageCode: "ja",
+      languageCode: "en",
       regionCode: "JP",
       rankPreference: "RELEVANCE"
     }
