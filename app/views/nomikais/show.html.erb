@@ -25,7 +25,12 @@
     </details>
   </header>
 
-  <h1><%= @nomikai.name.presence || "Your gathering" %></h1>
+  <div class="host-lobby__title-row">
+    <h1><%= @nomikai.name.presence || "Your gathering" %></h1>
+    <%= link_to nomikai_path(@nomikai), class: "host-lobby__refresh", aria: { label: "Refresh gathering and team feedback" }, title: "Refresh gathering and team feedback", data: { turbo: false } do %>
+      <i class="fa-solid fa-rotate-right" aria-hidden="true"></i><span>Refresh</span>
+    <% end %>
+  </div>
   <div class="host-lobby__meta">
     <span><i class="fa-solid fa-location-dot" aria-hidden="true"></i>
       <% if @nomikai.latitude.present? && @nomikai.longitude.present? %>
@@ -127,9 +132,7 @@
   <section class="host-lobby__participants" aria-labelledby="host-participants-heading">
     <div class="host-lobby__section-head">
       <div><h2 id="host-participants-heading">Participants</h2><p><%= people.size %> joined · <%= completed %> finished</p></div>
-      <%= link_to nomikai_path(@nomikai), class: "host-lobby__icon", aria: { label: "Refresh participants" }, data: { turbo: false } do %>
-        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
-      <% end %>
+
     </div>
     <div class="host-lobby__progress-label"><span>Responses completed</span><strong><%= completed %> / <%= total %></strong></div>
     <progress class="host-lobby__progress" value="<%= [completed, total].min %>" max="<%= [total, 1].max %>" aria-label="Responses completed"><%= progress %>%</progress>
