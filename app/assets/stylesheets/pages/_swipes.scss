@@ -103,7 +103,7 @@
   border: 1px solid $border-light;
   border-radius: 22px;
   background: $background-white;
-  box-shadow: 0 8px 22px rgba(41, 33, 29, 0.06);
+  box-shadow: none;
   pointer-events: none;
 
   &--front { z-index: 1; transform: translateY(7px) scale(0.975); }
@@ -117,7 +117,7 @@
   border: 1px solid $border-light;
   border-radius: 22px;
   background: $background-white;
-  box-shadow: 0 12px 30px rgba(41, 33, 29, 0.1);
+  box-shadow: none;
   cursor: grab;
   touch-action: pan-y;
   user-select: none;
@@ -126,7 +126,7 @@
   &__image {
     display: block;
     width: 100%;
-    height: clamp(230px, 68vw, 340px);
+    height: clamp(250px, 76vw, 380px);
     object-fit: cover;
     pointer-events: none;
   }
@@ -190,8 +190,9 @@
 
   &--like {
     left: 22px;
-    color: $brand-orange;
-    border-color: $brand-orange;
+    color: #fff;
+    background: #171717;
+    border-color: #fff;
     transform: rotate(-12deg);
   }
 
@@ -205,8 +206,9 @@
 
 .swipe-buttons {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(2, 68px);
+  justify-content: center;
+  gap: 28px;
 
   form {
     display: flex;
@@ -218,26 +220,30 @@
 .swipe-action {
   display: flex;
   width: 100%;
-  min-height: 54px;
+  height: 68px;
+  min-height: 68px;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 3px;
   border: 1px solid transparent;
-  border-radius: 15px;
+  border-radius: 50%;
   font: inherit;
   font-size: 16px;
   font-weight: 750;
   cursor: pointer;
   transition: transform 150ms ease, background-color 150ms ease, border-color 150ms ease;
 
-  i { font-size: 17px; }
+  i { font-size: 24px; }
+  span { font-size: 11px; line-height: 1; }
+  &:focus-visible { outline: 2px solid $text-primary; outline-offset: 4px; }
 
   &:active { transform: scale(0.98); }
 
   &--pass {
     border-color: $border-light;
-    background: $background-white;
-    color: $text-secondary;
+    background: $background-soft;
+    color: $text-primary;
 
     &:hover { border-color: $text-muted; background: $background-cream; }
   }
@@ -269,11 +275,10 @@
   }
 
   .swipe-page-header { margin-bottom: 15px; }
-  .swipe-card__image { height: clamp(220px, 68vw, 300px); }
+  .swipe-card__image { height: clamp(220px, 76vw, 340px); }
   .swipe-card__content { padding: 15px 16px 17px; }
   .swipe-card h2 { font-size: 21px; }
-  .swipe-action { min-height: 52px; font-size: 15px; }
-  .swipe-buttons { gap: 10px; }
+  .swipe-action { min-height: 68px; font-size: 15px; }
   .swipe-card-stack { margin-bottom: 18px; }
 }
 
@@ -303,7 +308,7 @@
   }
 
   &:focus-visible {
-    outline: 3px solid rgba(255, 105, 0, 0.35);
+    outline: 3px solid rgba(23, 23, 23, 0.35);
     outline-offset: 3px;
   }
 }
@@ -315,7 +320,7 @@
   border: 1px solid $border-light;
   border-radius: 20px;
   background: $background-white;
-  box-shadow: 0 12px 30px rgba(41, 33, 29, 0.08);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
   text-align: center;
 
   h2 {

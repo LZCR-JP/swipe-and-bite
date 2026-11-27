@@ -4,8 +4,9 @@ class NomikaisController < ApplicationController
 
   def index
     @ongoing_gathering = current_user&.nomikais&.ongoing&.includes(:participants)&.first
-    @nomikais = current_user ? current_user.nomikais.finished.order(Arel.sql("COALESCE(confirmed_at, matches_found_at) DESC")) : Nomikai.none
+    @nomikais = current_user ? current_user.nomikais.finished.includes(candidates: :venue).order(Arel.sql("COALESCE(confirmed_at, matches_found_at) DESC")) : Nomikai.none
     @joined_active, @joined_history = joined_plans.entries.partition { |person| person.nomikai.ongoing? }
+    ActiveRecord::Associations::Preloader.new(records: @joined_history.map(&:nomikai), associations: { candidates: :venue }).call
   end
 
   def participant_updates

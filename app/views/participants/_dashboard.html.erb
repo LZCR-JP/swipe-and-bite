@@ -25,13 +25,13 @@
         <% if @nomikai.confirmed? %>
           <span class="participant-focus-heading__status"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Confirmed</span>
           <h1>It's confirmed!</h1>
-          <p>See you there.</p>
+          <p><span class="sb-emoji" aria-hidden="true">🎉</span> See you there.</p>
         <% elsif voted %>
           <h1>Vote submitted</h1>
           <p><%= @nomikai.all_votes_received? ? "Waiting for host confirmation" : "Waiting for the remaining votes" %></p>
         <% else %>
           <h1>Host picked a restaurant</h1>
-          <p>Take a look and cast your vote.</p>
+          <p><span class="sb-emoji" aria-hidden="true">👀</span> Take a look and cast your vote.</p>
         <% end %>
       </div>
 

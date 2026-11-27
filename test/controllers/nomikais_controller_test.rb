@@ -36,6 +36,24 @@ class NomikaisControllerTest < ActionDispatch::IntegrationTest
     assert_select ".meeting-create", count: 1
   end
 
+  test "history uses the confirmed restaurant name and falls back for older plans" do
+    @gathering.update!(matches_found_at: Time.current)
+    venue = Venue.create!(google_place_id: "history-picked-venue", name: "Selected Restaurant")
+    @gathering.candidates.create!(venue: venue, selected: true)
+    get nomikais_path
+    assert_select ".ongoing-card h2", text: "Dinner plan"
+    assert_select "[data-controller=history-photo]", count: 0
+
+    @gathering.confirm_restaurant!
+    legacy = create_nomikai(user: @host, event_date: nil, meal_period: "lunch", status: "closed", decision_state: "legacy", matches_found_at: Time.current)
+    get nomikais_path
+    assert_select "a.gathering-history__row[href=?] strong", nomikai_path(@gathering), text: "Selected Restaurant"
+    assert_select "a.gathering-history__row[href=?] strong", nomikai_path(legacy), text: "Lunch plan"
+    assert_select "[data-history-photo-url-value=?]", confirmation_photo_nomikai_path(@gathering, format: :json), count: 1
+    assert_select "a.gathering-history__row[href=?] img[data-history-photo-target=image]", nomikai_path(@gathering), count: 1
+    assert_select "a.gathering-history__row[href=?] img", nomikai_path(legacy), count: 0
+  end
+
   test "cannot request matches with no completed responses" do
     post recommendations_nomikai_path(@gathering)
     assert_redirected_to nomikai_path(@gathering)

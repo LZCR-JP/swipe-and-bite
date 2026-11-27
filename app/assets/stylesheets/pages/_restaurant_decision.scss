@@ -48,7 +48,7 @@
 .confirmation-celebration::backdrop { background: rgba(0,0,0,.48); }
 .confirmation-celebration[open] { animation: celebration-enter .4s cubic-bezier(.2,.9,.3,1.15) both; }
 .confirmation-celebration__body { position: relative; padding: 30px 22px 20px; }
-.confirmation-celebration__check { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 16px; background: #ff6900; border-radius: 50%; font-size: 30px; color: #171717; }
+.confirmation-celebration__check { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 16px; background: #171717; border-radius: 50%; font-size: 30px; color: #fff; }
 .confirmation-celebration h2 { font-size: 30px; font-weight: 800; letter-spacing: -.04em; margin: 0 0 6px; }
 .confirmation-celebration h3 { font-size: 21px; font-weight: 700; margin: 18px 0 6px; overflow-wrap: anywhere; }
 .confirmation-celebration p { color: #666; font-size: 14px; margin: 0 0 12px; overflow-wrap: anywhere; }

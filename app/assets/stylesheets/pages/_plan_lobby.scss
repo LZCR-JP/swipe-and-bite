@@ -29,7 +29,7 @@
   .plan-crew__avatars { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 18px 0 12px; }
   .plan-crew__avatar {
     position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%;
-    background: #ffe8d8; color: #a64100; font-weight: 750; font-size: 15px;
+    background: #f5f5f5; color: #555555; font-weight: 750; font-size: 15px;
     &.is-empty { border: 1px dashed #c8c8c8; background: #fafafa; color: #949494; font-size: 14px; }
     &.is-extra { background: #f3f3f3; color: #666; }
     &.is-ready > i { position: absolute; right: -2px; bottom: -2px; display: grid; place-items: center; border: 2px solid #fff; border-radius: 50%; background: #287a43; color: #fff; width: 19px; height: 19px; font-size: 9px; }
@@ -43,8 +43,8 @@
   .plan-actions { display: grid; gap: 10px; margin-top: 20px; text-align: center; }
   .plan-actions form { margin: 0; }
   .plan-actions p { margin: 0; font-size: 12px; }
-  .plan-actions__swipe { min-height: 50px; justify-content: center; background: #ff6900; color: #171717; border: none; border-radius: 14px; font-weight: 700; }
-  .plan-actions__swipe:hover { color: #171717; background: #f96200; }
+  .plan-actions__swipe { min-height: 50px; justify-content: center; background: #171717; color: #fff; border: none; border-radius: 14px; font-weight: 700; }
+  .plan-actions__swipe:hover { color: #fff; background: #333333; }
   .plan-actions__done { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; color: #287a43; font-size: 13px; font-weight: 650; }
   .plan-actions .host-lobby__primary:not(:disabled) { background: #171717; color: white; }
   .plan-actions .host-lobby__primary:disabled { background: #f2f2f2; color: #686868; }
@@ -53,12 +53,12 @@
   text-align: center;
   padding: 28px 20px;
   .plan-wait-art { display: flex; align-items: center; justify-content: center; padding: 12px 0 20px; }
-  .plan-wait-art > span { display: grid; place-items: center; width: 57px; height: 71px; border: 3px solid white; border-radius: 15px; background: #fff0e5; color: #a64100; font-size: 24px; box-shadow: 0 4px 16px #0001; }
+  .plan-wait-art > span { display: grid; place-items: center; width: 57px; height: 71px; border: 3px solid white; border-radius: 15px; background: #f5f5f5; color: #555555; font-size: 24px; box-shadow: 0 4px 16px #0001; }
   .plan-wait-art > span:first-child { transform: rotate(-13deg) translateX(5px); }
-  .plan-wait-art > span:nth-child(2) { background: #ff6900; color: #171717; z-index: 1; transform: translateY(-8px); }
+  .plan-wait-art > span:nth-child(2) { background: #171717; color: #fff; z-index: 1; transform: translateY(-8px); }
   .plan-wait-art > span:last-child { transform: rotate(13deg) translateX(-5px); }
-  .plan-wait-indicator { display: inline-flex; align-items: center; gap: 4px; color: #a64100; font-size: 12px; font-weight: 650; }
-  .plan-wait-indicator i { display: block; width: 6px; height: 6px; border-radius: 50%; background: #ff6900; }
+  .plan-wait-indicator { display: inline-flex; align-items: center; gap: 4px; color: #555555; font-size: 12px; font-weight: 650; }
+  .plan-wait-indicator i { display: block; width: 6px; height: 6px; border-radius: 50%; background: #171717; }
   .plan-wait-indicator span { margin-left: 4px; }
 }
 @media (prefers-reduced-motion: no-preference) {

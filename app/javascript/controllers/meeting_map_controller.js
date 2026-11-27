@@ -17,11 +17,12 @@ function loadMaps(key) {
 }
 
 export default class extends Controller {
-  static targets = ["map", "pin", "area", "latitude", "longitude", "status", "people", "locationName"]
+  static targets = ["map", "pin", "area", "latitude", "longitude", "status", "people", "locationName", "mapWrap", "handle"]
   static values = { key: String }
 
   async connect() {
     this.active = true
+    this.setupSheet()
     this.revision = 0
     this.pending = false
     this.dragging = false
@@ -50,6 +51,7 @@ export default class extends Controller {
         this.message("Move the map to choose your meeting point")
       })
       this.idleListener = this.map.addListener("idle", () => {
+        if (this.sheetResizing) return
         const point = this.map.getCenter()?.toJSON()
         if (!point) return
         const moved = !this.samePoint(point, this.lastCenter)
@@ -70,10 +72,119 @@ export default class extends Controller {
 
   disconnect() {
     this.active = false
+    this.sheetObserver?.disconnect()
+    cancelAnimationFrame(this.sheetFrame)
+    cancelAnimationFrame(this.sheetReleaseFrame)
     this.revision++
     this.dragListener?.remove()
     this.idleListener?.remove()
     this.clickListener?.remove()
+  }
+
+  setupSheet() {
+    this.sheetMode = 1
+    this.sheetPointer = null
+    this.sheetResizing = false
+    this.applySheetMode(1)
+    if (typeof ResizeObserver !== "undefined") {
+      this.sheetObserver = new ResizeObserver(() => {
+        const height = this.mapWrapTarget.parentElement.clientHeight
+        if (height !== this.sheetFormHeight && this.sheetPointer === null) {
+          this.applySheetMode(this.sheetMode)
+          this.restoreMapCenter()
+        }
+      })
+      this.sheetObserver.observe(this.mapWrapTarget.parentElement)
+    }
+  }
+
+  sheetStops() {
+    const form = this.mapWrapTarget.parentElement
+    const errors = form.querySelector(".meeting-create__errors")
+    const height = form.clientHeight - (errors?.offsetHeight || 0)
+    this.sheetFormHeight = form.clientHeight
+    const compact = Math.min(220, Math.max(180, Math.round(height * .28)))
+    const expanded = Math.max(compact, Math.min(Math.round(height * .73), height - 112))
+    const balanced = Math.min(expanded, Math.max(Math.round(height * .39), Math.round(compact + (expanded - compact) / 3)))
+    return [compact, balanced, expanded]
+  }
+
+  setMapHeight(height) {
+    this.element.style.setProperty("--meeting-map-height", `${Math.round(height)}px`)
+  }
+
+  applySheetMode(mode) {
+    this.sheetMode = Math.max(0, Math.min(2, mode))
+    this.setMapHeight(this.sheetStops()[this.sheetMode])
+    this.handleTarget.setAttribute("aria-valuenow", String(this.sheetMode))
+    this.handleTarget.setAttribute("aria-valuetext", ["Small map", "Balanced", "Map expanded"][this.sheetMode])
+  }
+
+  startSheetDrag(event) {
+    if (!event.isPrimary || (event.pointerType === "mouse" && event.button !== 0) || this.sheetPointer !== null) return
+    this.sheetPointer = event.pointerId
+    this.sheetStartY = event.clientY
+    this.sheetStartHeight = this.mapWrapTarget.offsetHeight
+    this.sheetDragHeight = this.sheetStartHeight
+    this.sheetMoved = false
+    this.sheetResizing = true
+    this.handleTarget.setPointerCapture(event.pointerId)
+    this.element.classList.add("meeting-create--resizing")
+  }
+
+  moveSheetDrag(event) {
+    if (event.pointerId !== this.sheetPointer) return
+    const delta = event.clientY - this.sheetStartY
+    if (Math.abs(delta) > 5) this.sheetMoved = true
+    const stops = this.sheetStops()
+    this.sheetDragHeight = Math.max(stops[0], Math.min(stops[2], this.sheetStartHeight + delta))
+    this.setMapHeight(this.sheetDragHeight)
+  }
+
+  endSheetDrag(event) {
+    if (event.pointerId !== this.sheetPointer) return
+    const stops = this.sheetStops()
+    let mode = this.sheetMode
+    if (this.sheetMoved) {
+      mode = stops.reduce((best, value, index) => Math.abs(value - this.sheetDragHeight) < Math.abs(stops[best] - this.sheetDragHeight) ? index : best, 0)
+    } else {
+      mode = (mode + 1) % stops.length
+    }
+    this.finishSheetDrag(mode)
+  }
+
+  cancelSheetDrag(event) {
+    if (event.pointerId === this.sheetPointer) this.finishSheetDrag(this.sheetMode)
+  }
+
+  finishSheetDrag(mode) {
+    this.sheetPointer = null
+    this.element.classList.remove("meeting-create--resizing")
+    this.applySheetMode(mode)
+    this.restoreMapCenter()
+  }
+
+  restoreMapCenter() {
+    cancelAnimationFrame(this.sheetFrame)
+    cancelAnimationFrame(this.sheetReleaseFrame)
+    this.sheetResizing = true
+    this.sheetFrame = requestAnimationFrame(() => {
+      if (this.map && this.lastCenter) {
+        this.maps.event.trigger(this.map, "resize")
+        this.map.setCenter(this.lastCenter)
+      }
+      this.sheetReleaseFrame = requestAnimationFrame(() => {
+        if (this.sheetPointer === null) this.sheetResizing = false
+      })
+    })
+  }
+
+  sheetKey(event) {
+    const modes = { ArrowUp: this.sheetMode - 1, ArrowDown: this.sheetMode + 1, ArrowLeft: this.sheetMode - 1, ArrowRight: this.sheetMode + 1, Home: 0, End: 2, Enter: (this.sheetMode + 1) % 3, " ": (this.sheetMode + 1) % 3 }
+    if (!Object.hasOwn(modes, event.key)) return
+    event.preventDefault()
+    this.applySheetMode(modes[event.key])
+    this.restoreMapCenter()
   }
 
   message(text) { this.statusTarget.textContent = text }

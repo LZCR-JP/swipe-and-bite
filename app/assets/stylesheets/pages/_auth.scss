@@ -12,7 +12,7 @@
   border: 1px solid $border-light;
   border-radius: 22px;
   background: $background-white;
-  box-shadow: 0 10px 30px rgba(41, 33, 29, 0.06);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
 
   &__header {
     margin-bottom: 24px;
@@ -51,7 +51,7 @@
     min-height: 46px;
     border: 1px solid $border-light;
     border-radius: 10px;
-    background: #fffdfb;
+    background: #ffffff;
     color: $text-primary;
     box-shadow: none;
 

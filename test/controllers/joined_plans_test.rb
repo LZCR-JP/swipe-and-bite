@@ -38,6 +38,9 @@ class JoinedPlansTest < ActionDispatch::IntegrationTest
     assert_equal "confirmed", guest.response.parsed_body.fetch("updates").first.fetch("state")
     guest.get nomikais_path
     assert_includes guest.response.body, "Restaurant confirmed"
+    assert_includes guest.response.body, "<strong>Test Restaurant</strong>"
+    assert_includes guest.response.body, confirmation_photo_nomikai_path(@plan, format: :json)
+    assert_includes guest.response.body, 'data-history-photo-target="image"'
     assert_includes guest.response.body, participant_path(participant.token)
     guest.get participant_path(participant.token)
     assert_includes guest.response.body, "It's confirmed!"

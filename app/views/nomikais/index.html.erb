@@ -19,15 +19,19 @@
     <h2>History</h2>
     <% if @nomikais.any? || @joined_history.any? %>
       <% @nomikais.each do |gathering| %>
-        <%= link_to nomikai_path(gathering), class: "gathering-history__row" do %>
-          <span class="gathering-history__icon"><i class="fa-solid <%= gathering.meal_period == "lunch" ? "fa-sun" : "fa-moon" %>" aria-hidden="true"></i></span>
-          <span class="gathering-history__details">
-            <strong><%= plan_title(gathering) %></strong>
-            <small><%= gathering.area == "Selected on map" ? "Pinned location" : gathering.area.capitalize %> · <%= gathering.group_size %> people</small>
-            <small><%= l((gathering.confirmed_at || gathering.matches_found_at).to_date, format: :long) %></small>
-          </span>
-          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-        <% end %>
+        <% photo_available = history_photo_available?(gathering) %>
+        <div class="history-photo-row" <%= tag.attributes(data: { controller: "history-photo", history_photo_url_value: confirmation_photo_nomikai_path(gathering, format: :json), action: "turbo:before-cache@document->history-photo#reset" }) if photo_available %>>
+          <%= link_to nomikai_path(gathering), class: "gathering-history__row" do %>
+            <%= render "history_thumbnail", plan: gathering, icon_class: "gathering-history__icon", fallback_icon: (gathering.meal_period == "lunch" ? "fa-sun" : "fa-moon") %>
+            <span class="gathering-history__details">
+              <strong><%= plan_list_title(gathering) %></strong>
+              <small><%= gathering.area == "Selected on map" ? "Pinned location" : gathering.area.capitalize %> · <%= gathering.group_size %> people</small>
+              <small><%= l((gathering.confirmed_at || gathering.matches_found_at).to_date, format: :long) %></small>
+            </span>
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          <% end %>
+          <% if photo_available %><div class="history-photo-credit" data-history-photo-target="credit" hidden></div><% end %>
+        </div>
       <% end %>
       <%= render partial: "joined_plan", collection: @joined_history, as: :person %>
     <% else %>

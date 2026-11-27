@@ -6,8 +6,8 @@
 .nomikais-page {
   min-height: 100vh;
   padding: 40px 7%;
-  background: #fffaf4;
-  color: #29211d;
+  background: #ffffff;
+  color: #171717;
 }
 
 /* DASHBOARD HEADER */
@@ -23,11 +23,11 @@
     font-size: 30px;
     font-weight: 800;
     margin: 0 0 5px;
-    color: #29211d;
+    color: #171717;
   }
 
   p {
-    color: #82766d;
+    color: #757575;
     font-size: 14px;
     margin: 0;
   }
@@ -40,7 +40,7 @@
   align-items: center;
   justify-content: center;
   gap: 9px;
-  background: #ff6900;
+  background: #171717;
   color: white !important;
   padding: 13px 20px;
   border-radius: 11px;
@@ -50,7 +50,7 @@
   transition: 0.2s ease;
 
   &:hover {
-    background: #e85d00;
+    background: #333333;
     transform: translateY(-2px);
   }
 }
@@ -69,7 +69,7 @@
     font-size: 20px;
     font-weight: 800;
     margin: 0;
-    color: #29211d;
+    color: #171717;
   }
 }
 
@@ -88,8 +88,8 @@
   }
 
   .summary-total {
-    background: #fff0df;
-    color: #e9650b;
+    background: #f5f5f5;
+    color: #333333;
   }
 
   .summary-open {
@@ -113,22 +113,22 @@
 
 .nomikai-card {
   background: white;
-  border: 1px solid #f0e7de;
+  border: 1px solid #e5e5e5;
   border-radius: 18px;
   padding: 25px;
-  box-shadow: 0 5px 20px #33221108;
+  box-shadow: 0 5px 20px #00000008;
   transition: 0.2s ease;
 
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 10px 28px #33221112;
+    box-shadow: 0 10px 28px #00000012;
   }
 
   h3 {
     font-size: 21px;
     font-weight: 800;
     margin: 15px 0 20px;
-    color: #29211d;
+    color: #171717;
   }
 }
 
@@ -143,7 +143,7 @@
 }
 
 .nomikai-category {
-  color: #a19489;
+  color: #757575;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1px;
@@ -187,7 +187,7 @@
     width: 34px;
     height: 34px;
     border-radius: 8px;
-    color: #82766d;
+    color: #757575;
     cursor: pointer;
     transition: 0.2s ease;
 
@@ -196,8 +196,8 @@
     }
 
     &:hover {
-      background: #f5f1ed;
-      color: #29211d;
+      background: #f5f5f5;
+      color: #171717;
     }
 
     i {
@@ -206,8 +206,8 @@
   }
 
   &[open] summary {
-    background: #f5f1ed;
-    color: #29211d;
+    background: #f5f5f5;
+    color: #171717;
   }
 }
 
@@ -219,9 +219,9 @@
   width: 180px;
   padding: 6px;
   background: white;
-  border: 1px solid #eee7e0;
+  border: 1px solid #e5e5e5;
   border-radius: 10px;
-  box-shadow: 0 8px 25px #33221118;
+  box-shadow: 0 8px 25px #00000018;
 
   a,
   button {
@@ -279,13 +279,13 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    color: #675d55;
+    color: #555555;
     font-size: 14px;
     margin: 0;
 
     i {
       width: 16px;
-      color: #f36b16;
+      color: #333333;
       font-size: 14px;
     }
   }
@@ -296,7 +296,7 @@
 ========================================= */
 
 .nomikai-progress {
-  border-top: 1px solid #f1e9e2;
+  border-top: 1px solid #e5e5e5;
   padding-top: 20px;
   margin-bottom: 20px;
 }
@@ -306,25 +306,25 @@
   justify-content: space-between;
   align-items: center;
   font-size: 13px;
-  color: #82766d;
+  color: #757575;
   margin-bottom: 10px;
 
   strong {
-    color: #29211d;
+    color: #171717;
   }
 }
 
 .progress-track {
   width: 100%;
   height: 7px;
-  background: #f1e9e2;
+  background: #e5e5e5;
   border-radius: 20px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: #ff6900;
+  background: #171717;
   border-radius: 20px;
   transition: width 0.3s ease;
 }
@@ -343,14 +343,14 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #f36b16;
+  color: #333333;
   font-size: 14px;
   font-weight: 800;
   text-decoration: none;
   transition: 0.2s ease;
 
   &:hover {
-    color: #c94d00;
+    color: #333333;
     gap: 12px;
   }
 }
@@ -362,7 +362,7 @@
 .nomikai-empty-state {
   text-align: center;
   background: white;
-  border: 1px dashed #edcbb1;
+  border: 1px dashed #e5e5e5;
   border-radius: 20px;
   padding: 65px 25px;
   max-width: 650px;
@@ -371,20 +371,20 @@
   h2 {
     font-size: 26px;
     font-weight: 800;
-    color: #29211d;
+    color: #171717;
   }
 
   p {
     max-width: 430px;
     margin: 15px auto 25px;
-    color: #82766d;
+    color: #757575;
     line-height: 1.7;
   }
 }
 
 .empty-icon {
   font-size: 45px;
-  color: #ff6900;
+  color: #171717;
   margin-bottom: 20px;
 }
 
