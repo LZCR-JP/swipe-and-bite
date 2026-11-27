@@ -25,20 +25,20 @@
   .plan-invite__feedback { display: block; grid-column: 1 / -1; color: #555; font-size: 12px; }
   .plan-invite__feedback:empty { display: none; }
   .plan-invite__fallback { width: 100%; margin-top: 8px; padding: 9px; border-radius: 8px; border: 1px solid #ddd; font-size: 12px; }
-  .plan-crew { margin-top: 18px; padding: 18px; border: 1px solid #e7e7e7; border-radius: 22px; background: #fff; }
+  .plan-crew { margin-top: 18px; padding: 18px; border: 1px solid $border-light; border-radius: 22px; background: $background-white; }
   .plan-crew__avatars { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 18px 0 12px; }
   .plan-crew__avatar {
     position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%;
-    background: #f5f5f5; color: #555555; font-weight: 750; font-size: 15px;
-    &.is-empty { border: 1px dashed #c8c8c8; background: #fafafa; color: #949494; font-size: 14px; }
-    &.is-extra { background: #f3f3f3; color: #666; }
-    &.is-ready > i { position: absolute; right: -2px; bottom: -2px; display: grid; place-items: center; border: 2px solid #fff; border-radius: 50%; background: #287a43; color: #fff; width: 19px; height: 19px; font-size: 9px; }
+    background: $background-soft; color: $text-secondary; font-weight: 750; font-size: 15px;
+    &.is-empty { border: 1px dashed $border-light; background: $background-white; color: $text-muted; font-size: 14px; }
+    &.is-extra { background: $background-soft; color: $text-secondary; }
+    &.is-ready > i { position: absolute; right: -2px; bottom: -2px; display: grid; place-items: center; border: 2px solid $background-white; border-radius: 50%; background: $success; color: $background-white; width: 19px; height: 19px; font-size: 9px; }
   }
   .plan-crew__caption { text-align: center; margin: 0 0 20px; }
   .plan-crew__caption strong { font-size: 14px; font-weight: 700; }
   .plan-crew__caption p { font-size: 12px; }
   .plan-crew__details { margin-top: 12px; }
-  .plan-crew__details summary { display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 13px; color: #555; list-style: none; padding: 6px 0; }
+  .plan-crew__details summary { display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 13px; color: $text-secondary; list-style: none; padding: 6px 0; }
   .plan-crew__details summary::-webkit-details-marker { display: none; }
   .plan-actions { display: grid; gap: 10px; margin-top: 20px; text-align: center; }
   .plan-actions form { margin: 0; }

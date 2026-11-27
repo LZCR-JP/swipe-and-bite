@@ -501,9 +501,10 @@ body:has(.recommendations-screen) { background: #fff; }
 .recommendations-empty { padding: 18px; h2 { font-size: 19px; margin: 0 0 6px; } p { margin: 0; color: #666; font-size: 14px; line-height: 1.5; } }
 .recommendations-empty__action {
   display: flex; align-items: center; justify-content: center; min-height: 44px; margin-top: 14px; padding: 10px 16px;
-  border-radius: 12px; background: #171717; color: #fff; font-size: 14px; font-weight: 700; text-decoration: none;
+  width: 100%; border: 0; border-radius: 12px; background: #171717; color: #fff; font: inherit; font-size: 14px; font-weight: 700; text-decoration: none; cursor: pointer;
   &:hover { background: #333333; color: #fff; text-decoration: none; }
 }
+.recommendations-empty__action-form { margin: 0; }
 @media (prefers-reduced-motion: no-preference) {
   .recommendation-select-button, .recommendation-map-link { transition: transform 160ms ease, background-color 160ms ease; &:active { transform: scale(.98); } }
 }

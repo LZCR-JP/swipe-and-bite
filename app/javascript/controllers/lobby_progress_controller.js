@@ -28,12 +28,10 @@ export default class extends Controller {
       if (!result.ongoing) { window.location.reload(); return }
       if (!result.html) return
       const expanded = this.panelTarget.querySelector("details[open]")
-      const hadRefreshFocus = document.activeElement?.matches('[data-action="lobby-progress#refresh"]')
       // Only replace the participant panel, not the invite, map or entire page.
       this.panelTarget.innerHTML = result.html
       this.signatureValue = result.signature
       if (expanded) this.panelTarget.querySelector("details")?.setAttribute("open", "")
-      if (hadRefreshFocus) this.panelTarget.querySelector('[data-action="lobby-progress#refresh"]')?.focus({ preventScroll: true })
       this.announcementTarget.textContent = `${result.guest_joined} of ${result.guest_total} guests joined, ${result.completed} of ${result.total} swipes completed.`
     } catch (error) {
       // Retry on the next poll; the existing view remains usable.

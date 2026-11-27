@@ -218,6 +218,13 @@ class NomikaisController < ApplicationController
     end
   rescue GooglePlacesSearch::StaleSearch
     redirect_to nomikai_path(@nomikai), alert: "Search conditions changed. Please start a new search.", status: :see_other
+  rescue GooglePlacesSearch::Unavailable => error
+    Rails.logger.warn("Restaurant recommendations unavailable for nomikai #{@nomikai.id}: #{error.message}")
+    @places = []
+    @used_fallback = false
+    @reshuffled = params[:continuation].present?
+    @search_error = true
+    render :recommendations, status: :service_unavailable
   end
 
   def recommendations_landing

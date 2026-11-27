@@ -11,7 +11,6 @@
 <section class="plan-crew" aria-labelledby="crew-heading">
   <div class="host-lobby__section-head">
     <div><h2 id="crew-heading">Participants</h2><p><%= guests.size %> / <%= guest_total %> joined</p></div>
-    <button type="button" class="host-lobby__icon" aria-label="Refresh participants" data-action="lobby-progress#refresh"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i></button>
   </div>
   <div class="plan-crew__avatars" aria-label="<%= guests.size %> of <%= guest_total %> guests joined, <%= guest_completed %> finished swiping">
     <% visible_people.each do |person| %>
