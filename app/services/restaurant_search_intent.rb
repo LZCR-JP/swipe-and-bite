@@ -97,22 +97,38 @@ class RestaurantSearchIntent
 
   def initialize(nomikai)
     @nomikai = nomikai
+    @used_fallback = false
   end
 
-  def call
-    terms = ::RubyLLM.chat(model: MODEL)
-                     .ask(prompt)
-                     .content
-                     .to_s
-                     .strip
+  attr_reader :used_fallback
 
-    terms = "グループ向け レストラン" if terms.empty?
+  def call
+    terms = begin
+      ::RubyLLM.chat(model: MODEL)
+                   .ask(prompt)
+                   .content
+                   .to_s
+                   .strip
+    rescue StandardError => error
+      @used_fallback = true
+      Rails.logger.warn("Restaurant search intent failed (#{error.class}); using a basic query")
+      ""
+    end
+
+    if terms.empty?
+      @used_fallback = true
+      terms = [meal_term, "グループ向け レストラン"].join(" ")
+    end
 
     area = @nomikai.area unless @nomikai.area == "Selected on map"
     [area, terms].compact.join(" ")
   end
 
   private
+
+  def meal_term
+    @nomikai.meal_period == "lunch" ? "ランチ" : "ディナー"
+  end
 
   def prompt
     "#{INSTRUCTIONS}\nEvent preferences:\n#{JSON.generate(preferences)}"

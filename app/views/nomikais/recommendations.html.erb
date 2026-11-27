@@ -124,6 +124,14 @@
       </div>
       <p class="recommendations-attribution" translate="no">Google Maps</p>
       <p class="recommendations-note">Confirm prices, seating and dietary needs with the restaurant.</p>
+    <% elsif @search_error %>
+      <section class="recommendations-empty" role="alert">
+        <h2>Restaurant search is temporarily unavailable</h2>
+        <p>We couldn’t reach Google Places right now. Try again in a moment.</p>
+        <%= button_to "Try again", recommendations_nomikai_path(@nomikai), method: :post,
+                      class: "recommendations-empty__action",
+                      form: { class: "recommendations-empty__action-form", data: { turbo: false } } %>
+      </section>
     <% else %>
       <section class="recommendations-empty">
         <h2><%= @reshuffled ? "No more matches on this search" : "We couldn’t find a match yet" %></h2>
@@ -136,6 +144,9 @@
         </p>
         <% if @nomikai.collecting_swipes? %>
           <%= link_to "Adjust area or budget", edit_nomikai_path(@nomikai), class: "recommendations-empty__action" %>
+          <%= button_to "Search again", recommendations_nomikai_path(@nomikai), method: :post,
+                        class: "recommendations-empty__action",
+                        form: { class: "recommendations-empty__action-form", data: { turbo: false } } %>
         <% else %>
           <%= link_to "Back to plan", nomikai_path(@nomikai), class: "recommendations-empty__action" %>
         <% end %>

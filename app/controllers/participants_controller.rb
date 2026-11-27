@@ -22,16 +22,22 @@ class ParticipantsController < ApplicationController
           @participant = existing_participant
         end
         unless @participant || @invitation&.revoked?
-          @participant = @nomikai.participants.create!(
-            nickname: current_user ? current_user.name.to_s.strip.truncate(30) : next_guest_name,
-            user: current_user,
-            invitation: @invitation
-          )
+          if participant_capacity_available?
+            @participant = @nomikai.participants.create!(
+              nickname: current_user ? current_user.name.to_s.strip.truncate(30) : next_guest_name,
+              user: current_user,
+              invitation: @invitation
+            )
+          else
+            @join_error = "This plan is full. Ask the host for another plan."
+          end
         end
       end
     end
     unless @participant
-      return render_unavailable("This event is no longer accepting new teammates.", status: :forbidden)
+      message = @join_error || "This event is no longer accepting new teammates."
+      status = @join_error ? :conflict : :forbidden
+      return render_unavailable(message, status: status)
     end
     remember_guest(@participant) unless current_user
     redirect_to resume_path(@participant), status: :see_other
@@ -127,11 +133,26 @@ class ParticipantsController < ApplicationController
   end
 
   def ensure_open
-    return if @nomikai.accepting_participants?
     existing = existing_participant
     return redirect_to resume_path(existing), status: :see_other if existing
 
-    render_unavailable("This event is no longer accepting new teammates.", status: :forbidden)
+    return if @nomikai.accepting_participants? && participant_capacity_available?
+
+    unless @nomikai.accepting_participants?
+      return render_unavailable("This event is no longer accepting new teammates.", status: :forbidden)
+    end
+
+    return render_unavailable("This plan is full. Ask the host for another plan.", status: :conflict)
+  end
+
+  # The host owns one group slot even before their participant record is created.
+  # Called again inside the gathering lock before creating a new participant.
+  def participant_capacity_available?
+    participants = @nomikai.participants
+    joined_count = participants.count
+    host_has_record = participants.exists?(user_id: @nomikai.user_id)
+    effective_count = joined_count + (host_has_record ? 0 : 1)
+    effective_count < @nomikai.group_size.to_i
   end
 
   def render_unavailable(message, status:)

@@ -49,6 +49,16 @@ class GooglePlacesSearch
   }.freeze
 
   SEARCH_HALF_WIDTH_KM = 0.8
+  FALLBACK_HALF_WIDTH_KM = 2.0
+
+  DIETARY_SEARCH_TERMS = {
+    "Vegetarian" => "ベジタリアン",
+    "Vegan" => "ヴィーガン",
+    "Halal" => "ハラール",
+    "Gluten-free" => "グルテンフリー",
+    "Seafood allergy" => "魚介アレルギー対応",
+    "Nut allergy" => "ナッツアレルギー対応"
+  }.freeze
 
   attr_reader :used_fallback, :next_state
 
@@ -74,9 +84,12 @@ class GooglePlacesSearch
       if @continuation.fetch("filters") != @active_filters.deep_stringify_keys
         raise StaleSearch, "Search conditions have changed"
       end
+      @request_filters = @continuation.fetch("request_filters", @active_filters.deep_stringify_keys).deep_symbolize_keys
       places = search_places(@query)
     else
-      @query = RestaurantSearchIntent.new(@nomikai).call
+      intent = RestaurantSearchIntent.new(@nomikai)
+      @query = intent.call
+      @used_fallback = intent.used_fallback
       places = search_with_fallback(@query)
     end
 
@@ -90,7 +103,8 @@ class GooglePlacesSearch
         "page_token" => @next_page_token,
         "seen_ids" => @seen_ids + places.map { |place| place.fetch("id") },
         "used_fallback" => @used_fallback,
-        "filters" => @active_filters.deep_stringify_keys
+        "filters" => @active_filters.deep_stringify_keys,
+        "request_filters" => @request_filters.deep_stringify_keys
       }
     end
 
@@ -102,40 +116,57 @@ class GooglePlacesSearch
   end
 
   class StaleSearch < StandardError; end
+  class Unavailable < StandardError; end
 
   private
 
   def search_with_fallback(query)
-    places = search_places(query)
-    return places if places.any?
+    broad_filters = @active_filters.except(:priceLevels)
+    wider_restriction = location_restriction(FALLBACK_HALF_WIDTH_KM)
+    wider_filters = wider_restriction ? broad_filters.merge(locationRestriction: wider_restriction) : broad_filters
+    attempts = [
+      [query, @active_filters],
+      [fallback_query, broad_filters],
+      [broad_query, wider_filters]
+    ].uniq
 
-    restrictions = @nomikai.participants.flat_map(&:restrictions).compact.reject(&:blank?)
-    return places if restrictions.any?
+    attempts.each_with_index do |(attempt_query, filters), index|
+      @query = attempt_query
+      @request_filters = filters
+      @next_page_token = nil
+      @used_fallback = true if index.positive?
+      places = search_places(attempt_query)
+      return places if places.any?
+    end
 
-    @used_fallback = true
-    @query = fallback_query
-    search_places(@query)
+    []
   end
 
   def fallback_query
     terms = [@nomikai.area == "Selected on map" ? nil : @nomikai.area]
-    terms << (@nomikai.meal_period == "lunch" ? "ランチ" : "ディナー")
-
-    if @nomikai.group_size.to_i >= 6
-      terms << "着席 宴会 グループ向け"
-    else
-      terms << "グループ向け レストラン"
-    end
-
-    if @nomikai.group_size.present?
-      terms << "#{@nomikai.group_size}名"
-    end
-
-    if effective_budget.present?
-      terms << "#{effective_budget}円以内"
-    end
+    terms << meal_term
+    terms << (@nomikai.group_size.to_i >= 6 ? "宴会" : "グループ利用")
+    terms.concat(dietary_terms)
+    terms << "レストラン"
 
     terms.compact.join(" ")
+  end
+
+  def broad_query
+    terms = [@nomikai.area == "Selected on map" ? nil : @nomikai.area]
+    terms << meal_term
+    terms << "レストラン"
+    terms.compact.join(" ")
+  end
+
+  def meal_term
+    @nomikai.meal_period == "lunch" ? "ランチ" : "ディナー"
+  end
+
+  def dietary_terms
+    @nomikai.participants.flat_map(&:restrictions).compact.uniq.filter_map do |restriction|
+      DIETARY_SEARCH_TERMS[restriction]
+    end
   end
 
   def field_mask
@@ -148,24 +179,31 @@ class GooglePlacesSearch
     response = post(build_request(query))
 
     unless response.is_a?(Net::HTTPSuccess)
-      raise "Google Places request failed (HTTP #{response.code})"
+      raise Unavailable, "Google Places returned HTTP #{response.code}"
     end
 
     body = JSON.parse(response.body)
     @next_page_token = body["nextPageToken"]
-    body.fetch("places", [])
+    Array(body["places"])
+  rescue Unavailable
+    raise
+  rescue StandardError => error
+    Rails.logger.error("Google Places search failed (#{error.class})")
+    raise Unavailable, "Restaurant search is temporarily unavailable"
   end
 
   def build_request(query)
     request = Net::HTTP::Post.new(ENDPOINT)
 
     request["Content-Type"] = "application/json"
-    request["X-Goog-Api-Key"] =
-      ENV.fetch("GOOGLE_MAPS_API_KEY")
+    api_key = ENV["GOOGLE_MAPS_API_KEY"].presence
+    raise Unavailable, "Google Places API key is missing" unless api_key
+
+    request["X-Goog-Api-Key"] = api_key
 
     request["X-Goog-FieldMask"] = field_mask
 
-    payload = (@active_filters || search_filters).merge(textQuery: query, pageSize: 3)
+    payload = (@request_filters || @active_filters || search_filters).merge(textQuery: query, pageSize: 3)
     payload[:pageToken] = @page_token if @page_token.present?
     request.body = JSON.generate(payload)
     request
@@ -233,7 +271,7 @@ class GooglePlacesSearch
     AREA_CENTERS[@nomikai.area.to_s.strip.downcase]
   end
 
-  def location_restriction
+  def location_restriction(half_width_km = SEARCH_HALF_WIDTH_KM)
     center = area_center
 
     unless center
@@ -243,9 +281,9 @@ class GooglePlacesSearch
 
     lat, lng = center
 
-    lat_delta = SEARCH_HALF_WIDTH_KM / 111.0
+    lat_delta = half_width_km / 111.0
 
-    lng_delta = SEARCH_HALF_WIDTH_KM /
+    lng_delta = half_width_km /
       (111.0 * Math.cos(lat * Math::PI / 180))
 
     {
