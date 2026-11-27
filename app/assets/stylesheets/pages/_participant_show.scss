@@ -224,6 +224,14 @@
   &:active { transform: translateY(1px); }
 }
 
+.participant-maps-hint {
+  margin: 8px 0 0;
+  color: $text-secondary;
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: center;
+}
+
 .participant-feedback {
   margin-top: 21px;
   padding-top: 18px;
