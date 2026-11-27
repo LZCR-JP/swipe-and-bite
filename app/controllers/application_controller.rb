@@ -5,7 +5,13 @@ class ApplicationController < ActionController::Base
   before_action :configure_permitted_parameters,
                 if: :devise_controller?
 
+  helper_method :joined_plans
+
   protected
+
+  def joined_plans
+    @joined_plans ||= JoinedPlans.new(user: current_user, guest_tokens: (session[:guest_participants] || {}).values)
+  end
 
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up, keys: [:name])

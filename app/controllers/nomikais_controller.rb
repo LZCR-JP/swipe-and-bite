@@ -1,10 +1,47 @@
 class NomikaisController < ApplicationController
-  before_action :authenticate_user!
-  before_action :set_nomikai, only: %i[show destroy close progress recommendations recommendations_landing select_candidate]
+  before_action :authenticate_user!, except: %i[index participant_updates confirmation_photo]
+  before_action :set_nomikai, only: %i[show destroy close progress recommendations recommendations_landing select_candidate candidate_decision start_host_swipes]
 
   def index
-    @ongoing_gathering = current_user.nomikais.ongoing.includes(:participants).first
-    @nomikais = current_user.nomikais.finished.order(matches_found_at: :desc)
+    @ongoing_gathering = current_user&.nomikais&.ongoing&.includes(:participants)&.first
+    @nomikais = current_user ? current_user.nomikais.finished.order(Arel.sql("COALESCE(confirmed_at, matches_found_at) DESC")) : Nomikai.none
+    @joined_active, @joined_history = joined_plans.entries.partition { |person| person.nomikai.ongoing? }
+  end
+
+  def participant_updates
+    expires_now
+    updates = joined_plans.entries.filter_map do |person|
+      state = joined_plans.status(person)
+      next unless %w[vote confirmed].include?(state)
+
+      plan = person.nomikai
+      update = { key: "#{person.id}:#{plan.decision_round}:#{state}",
+        state: state, title: helpers.plan_title(plan), path: participant_path(person.token) }
+      update.merge!(confirmation_update(plan)) if state == "confirmed"
+      update
+    end
+    if current_user
+      current_user.nomikais.where(decision_state: "confirmed").where(confirmed_at: 15.minutes.ago..Time.current).find_each do |plan|
+        updates << { key: "host:#{current_user.id}:#{plan.id}:#{plan.decision_round}:confirmed",
+          state: "confirmed", title: helpers.plan_title(plan), path: nomikai_path(plan) }.merge(confirmation_update(plan))
+      end
+    end
+    render json: { signature: joined_plans.signature, updates: updates }
+  end
+
+  def confirmation_photo
+    expires_now
+    plan = current_user&.nomikais&.find_by(id: params[:id]) || joined_plans.entries.find { |person| person.nomikai_id.to_s == params[:id].to_s }&.nomikai
+    return head :not_found unless plan&.confirmed?
+    venue = plan.candidates.find_by(selected: true)&.venue
+    return head :not_found unless venue
+
+    details = GooglePlaceDetails.new(venue.google_place_id, include_photo: true).call || {}
+    photo_name = details[:photo_name]
+    return render json: {} if photo_name.blank?
+
+    token = Rails.application.message_verifier(:restaurant_photo).generate(photo_name, expires_in: 5.minutes, purpose: :confirmed_restaurant_photo)
+    render json: { photo_url: restaurant_photo_path(token: token), authors: details[:photo_attributions] || [] }
   end
 
   def show
@@ -34,6 +71,22 @@ class NomikaisController < ApplicationController
     end
   end
 
+  def start_host_swipes
+    participant = nil
+    @nomikai.with_lock do
+      if @nomikai.collecting_swipes?
+        participant = @nomikai.participants.find_or_create_by!(user: current_user) do |person|
+          person.nickname = current_user.name.to_s.truncate(30)
+        end
+      end
+    end
+    if participant && participant.completed_at.nil?
+      redirect_to participant_swipes_path(participant.token), status: :see_other
+    else
+      redirect_to nomikai_path(@nomikai), status: :see_other
+    end
+  end
+
   def new
     @ongoing_gathering = current_user.nomikais.ongoing.includes(:participants).first
     @nomikai = Nomikai.new
@@ -60,10 +113,12 @@ class NomikaisController < ApplicationController
 
   def edit
     @nomikai = current_user.nomikais.find(params[:id])
+    return redirect_to nomikai_path(@nomikai) unless @nomikai.collecting_swipes?
   end
 
   def update
     @nomikai = current_user.nomikais.find(params[:id])
+    return redirect_to nomikai_path(@nomikai), status: :see_other unless @nomikai.collecting_swipes?
 
     if @nomikai.update(nomikai_params)
       redirect_to nomikai_path(@nomikai),
@@ -99,16 +154,34 @@ class NomikaisController < ApplicationController
 
   def progress
     expires_now
-    render json: {
+    people = @nomikai.participants.order(:created_at).to_a
+    completed = people.count { |person| person.completed_at.present? }
+    payload = {
       ongoing: @nomikai.ongoing?,
-      joined: @nomikai.participants.count,
-      completed: @nomikai.participants.where.not(completed_at: nil).count,
-      total: @nomikai.group_size
+      joined: people.size,
+      completed: completed,
+      total: @nomikai.group_size,
+      matches_ready: @nomikai.matches_ready?,
+      decision_state: @nomikai.decision_state,
+      signature: @nomikai.decision_signature
     }
+    if params[:view] == "lobby"
+      payload[:guest_joined] = people.count { |person| !person.host? }
+      payload[:guest_total] = [@nomikai.group_size - 1, 0].max
+      payload[:ongoing] = @nomikai.collecting_swipes?
+    end
+    if params[:view] == "lobby" && payload[:ongoing]
+      signature = [people.size, completed, @nomikai.group_size].join(":")
+      payload[:signature] = signature
+      if params[:signature] != signature
+        payload[:html] = render_to_string(partial: "nomikais/crew_progress", locals: { nomikai: @nomikai, people: people }, formats: [:html])
+      end
+    end
+    render json: payload
   end
 
   def recommendations
-    unless @nomikai.finished? || (@nomikai.ongoing? && @nomikai.participants.where.not(completed_at: nil).exists?)
+    unless @nomikai.ongoing? && @nomikai.decision_state != "voting" && (@nomikai.matches_ready? || @nomikai.participants.where.not(completed_at: nil).exists?)
       redirect_to nomikai_path(@nomikai), alert: "Complete at least one response before searching.", status: :see_other
       return
     end
@@ -128,8 +201,8 @@ class NomikaisController < ApplicationController
     @places = service.call
     cancelled = false
     @nomikai.with_lock do
-      cancelled = !@nomikai.ongoing? && !@nomikai.finished?
-      if !cancelled && @places.any? && !@nomikai.finished?
+      cancelled = !@nomikai.ongoing? || @nomikai.decision_state == "voting"
+      if !cancelled && @places.any? && !@nomikai.matches_ready?
         @nomikai.update!(matches_found_at: Time.current)
       end
     end
@@ -151,20 +224,51 @@ class NomikaisController < ApplicationController
                 notice: "Search results are temporary. Run a new search to refresh them."
   end
 
+  def candidate_decision
+    @candidate = @nomikai.candidates.includes(:venue).find(params[:candidate_id])
+    return redirect_to nomikai_path(@nomikai) unless @nomikai.ongoing? && @nomikai.matches_ready?
+    if @nomikai.decision_state == "voting" && (!@candidate.selected? || !@nomikai.all_votes_received?)
+      redirect_to nomikai_path(@nomikai), alert: "Wait for everyone to vote."
+    end
+  end
+
   def select_candidate
     candidate = @nomikai.candidates.find(params[:candidate_id])
+    mode = params[:decision]
+    return head :unprocessable_entity unless %w[confirm vote].include?(mode)
 
     @nomikai.with_lock do
+      unless @nomikai.ongoing? && @nomikai.matches_ready?
+        return redirect_to nomikai_path(@nomikai), status: :see_other
+      end
+      if @nomikai.decision_state == "voting" && (mode != "confirm" || !candidate.reload.selected? || !@nomikai.all_votes_received?)
+        return redirect_to nomikai_path(@nomikai), status: :see_other, alert: "Wait for everyone to vote before confirming."
+      end
+      if mode == "vote" && !@nomikai.voting_participants.exists?
+        return redirect_to candidate_decision_nomikai_path(@nomikai, candidate_id: candidate.id), status: :see_other, alert: "No other participants to ask. Confirm the restaurant yourself."
+      end
       @nomikai.candidates.where.not(id: candidate.id).update_all(selected: false)
       candidate.update!(selected: true)
+      candidate.candidate_votes.delete_all if mode == "vote"
+      @nomikai.decision_round += 1
+      if mode == "confirm"
+        @nomikai.confirm_restaurant!
+      else
+        @nomikai.update!(decision_state: "voting")
+      end
     end
-
-    redirect_to nomikai_path(@nomikai),
-                status: :see_other,
-                notice: "Restaurant selected."
+    redirect_to nomikai_path(@nomikai), status: :see_other
   end
 
   private
+
+  def confirmation_update(plan)
+    return {} unless plan.confirmed_at && plan.confirmed_at >= 15.minutes.ago
+    venue = plan.candidates.find_by(selected: true)&.venue
+    return {} unless venue
+    { restaurant: venue.name.presence || "Restaurant", address: venue.formatted_address,
+      photo_endpoint: confirmation_photo_nomikai_path(plan, format: :json) }
+  end
 
   def set_nomikai
     @nomikai = current_user.nomikais.find(params[:id])

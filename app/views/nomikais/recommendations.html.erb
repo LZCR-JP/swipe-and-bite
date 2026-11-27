@@ -1,143 +1,150 @@
 <div class="recommendations-screen">
   <main class="recommendations-page">
-    <%= link_to "← Back to event", nomikai_path(@nomikai), class: "recommendations-back-link" %>
-
+    <header class="recommendations-topbar">
+      <%= link_to nomikai_path(@nomikai), class: "recommendations-back-link", aria: { label: "Back to plan" } do %>
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+      <% end %>
+      <span>Restaurants</span>
+      <span class="recommendations-topbar__spacer" aria-hidden="true"></span>
+    </header>
     <header class="recommendations-header">
-      <span class="recommendations-eyebrow">RESTAURANT OPTIONS</span>
-      <h1>Choose a restaurant</h1>
-      <p>Choose a place to share with your group.</p>
+      <h1>Top picks</h1>
+      <p>Choose a restaurant for your plan.</p>
     </header>
 
-    <% search_area = @nomikai.area == "Selected on map" ? "your chosen map location" : @nomikai.area.to_s.titleize %>
-
-    <section class="recommendations-context" aria-label="How recommendations are chosen">
-      <h2>Search based on</h2>
-      <p><strong><%= search_area %></strong> · <strong><%= @nomikai.meal_period %></strong> · <strong><%= @nomikai.group_size %> people</strong><% if @nomikai.budget_per_person.present? %> · <strong>¥<%= number_with_delimiter(@nomikai.budget_per_person) %>/person</strong><% end %></p>
-      <p class="recommendations-context__note">Team swipes and dietary needs are considered when available.</p>
-    </section>
-
     <% if @used_fallback && @places.any? %>
-      <p class="recommendations-fallback">No exact results. Showing a broader search.</p>
+      <p class="recommendations-fallback">Showing a broader search.</p>
     <% end %>
 
     <% if @places.any? %>
+      <% allow_vote = @nomikai.decision_state != "voting" && @nomikai.voting_participants.exists? %>
       <div class="recommendation-list">
         <% @places.each do |place| %>
           <article class="recommendation-card">
-            <div class="recommendation-main">
-              <div class="recommendation-details">
-                <h2><%= place[:name].presence || "Restaurant" %></h2>
-                <% cuisine = place[:category].presence || place[:cuisine].to_s.delete("_").humanize.presence %>
-                <p class="recommendation-cuisine"><span>Cuisine</span><strong><%= cuisine.presence || "Not listed" %></strong></p>
-                <% start_price = place[:price_range]&.dig("startPrice", "units") %>
-                <% end_price = place[:price_range]&.dig("endPrice", "units") %>
-                <p class="recommendation-price">
-                  <% if start_price.present? && end_price.present? %>
-                    ¥<%= number_with_delimiter(start_price.to_i) %>–<%= number_with_delimiter(end_price.to_i) %>
-                  <% else %>
-                    Price unavailable
-                  <% end %>
-                </p>
-                <% if place[:address].present? %>
-                  <p class="recommendation-address"><%= place[:address] %></p>
-                <% end %>
-                <% budget_comparison = nil %>
-                <% if @nomikai.budget_per_person.present? && start_price.present? && end_price.present? %>
-                  <% budget_comparison = if end_price.to_i <= @nomikai.budget_per_person
-                                           "Within your budget"
-                                         elsif start_price.to_i <= @nomikai.budget_per_person
-                                           "Overlaps your budget"
-                                         else
-                                           "Above your budget"
-                                         end %>
-                <% end %>
-              </div>
-
-              <figure class="recommendation-photo">
+            <figure class="recommendation-photo" data-controller="restaurant-preview">
+              <div class="recommendation-photo__image">
+                <div class="recommendation-no-photo" data-restaurant-preview-target="fallback">
+                  <i class="fa-solid fa-utensils" aria-hidden="true"></i>
+                  <span data-restaurant-preview-target="message"><%= place[:photo_name].present? ? "Loading photo…" : "Photo unavailable" %></span>
+                </div>
                 <% if place[:photo_name].present? %>
                   <% token = Rails.application.message_verifier(:restaurant_photo).generate(place[:photo_name], expires_in: 15.minutes, purpose: :restaurant_photo) %>
-                  <%= image_tag restaurant_photo_path(token: token), alt: "Photo of #{place[:name]}", loading: "lazy", decoding: "async" %>
-                  <% if place[:photo_attributions].present? %>
-                    <figcaption>
-                      <% place[:photo_attributions].each do |author| %>
-                        <% if author["uri"].present? %>
-                          <%= link_to author["displayName"], author["uri"], target: "_blank", rel: "noopener noreferrer" %>
-                        <% else %>
-                          <%= author["displayName"] %>
-                        <% end %>
-                      <% end %>
-                    </figcaption>
-                  <% end %>
-                <% else %>
-                  <div class="recommendation-no-photo">No photo</div>
+                  <%= image_tag restaurant_photo_path(token: token), alt: "Photo of #{place[:name]}", loading: "lazy", decoding: "async", data: { restaurant_preview_target: "image", action: "load->restaurant-preview#loaded error->restaurant-preview#failed" } %>
                 <% end %>
-              </figure>
-            </div>
-
-            <details class="recommendation-why">
-              <summary>Why this result?</summary>
-              <p>Found near <%= search_area %>.</p>
-              <% if budget_comparison.present? %>
-                <p><strong>Price:</strong> <%= budget_comparison %> (Google estimate).</p>
-              <% end %>
-              <p class="recommendation-why__note">Confirm price, seating and dietary needs with the restaurant.</p>
-            </details>
-
-            <div class="recommendation-actions">
-              <% if place[:google_maps_uri].present? %>
-                <%= link_to "Maps", place[:google_maps_uri], class: "recommendation-map-link", target: "_blank", rel: "noopener noreferrer" %>
-              <% end %>
-              <% if place[:website].present? %>
-                <%= link_to "Website", place[:website], class: "recommendation-map-link", target: "_blank", rel: "noopener noreferrer" %>
-              <% end %>
-            </div>
-
-            <% if place[:selected] %>
-              <p class="recommendation-selected-status"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Selected for this gathering</p>
-            <% else %>
-              <%= button_to "Choose this restaurant", select_candidate_nomikai_path(@nomikai, candidate_id: place[:candidate_id]),
-                            method: :patch,
-                            class: "recommendation-select-button",
-                            form: { class: "recommendation-select-form" } %>
-            <% end %>
-
-            <% Array(place[:attributions]).each do |attribution| %>
-              <% if attribution["provider"].present? %>
-                <p class="recommendations-attribution">
-                  <% if attribution["providerUri"].present? %>
-                    <%= link_to attribution["provider"], attribution["providerUri"], target: "_blank", rel: "noopener noreferrer" %>
-                  <% else %>
-                    <%= attribution["provider"] %>
+              </div>
+              <% if place[:photo_name].present? && place[:photo_attributions].present? %>
+                <figcaption data-restaurant-preview-target="credit">
+                  <% place[:photo_attributions].each do |author| %>
+                    <% if author["displayName"].present? %>
+                      <% if author["uri"].present? %>
+                        <%= link_to author["displayName"], author["uri"], target: "_blank", rel: "noopener noreferrer" %>
+                      <% else %>
+                        <%= author["displayName"] %>
+                      <% end %>
+                    <% end %>
                   <% end %>
-                </p>
+                </figcaption>
               <% end %>
-            <% end %>
+            </figure>
+
+            <div class="recommendation-details">
+              <h2><%= place[:name].presence || "Restaurant" %></h2>
+              <% price = restaurant_price_range(place[:price_range]) %>
+              <% low = place[:price_range].is_a?(Hash) ? place[:price_range]["startPrice"] : nil %>
+              <% above_budget = price.present? && low.is_a?(Hash) && low["currencyCode"] == "JPY" && low["units"].to_i > @nomikai.budget_per_person.to_i && @nomikai.budget_per_person.present? %>
+              <div class="recommendation-price-row">
+                <p class="recommendation-price"><%= price || "Price unavailable" %><% if price.present? %> <small>/ person · estimate</small><% end %></p>
+                <% if above_budget %><span class="recommendation-budget-note">Above budget</span><% end %>
+              </div>
+              <% if place[:address].present? %>
+                <p class="recommendation-address"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span><%= place[:address] %></span></p>
+              <% end %>
+
+              <details class="recommendation-why">
+                <summary>
+                  <span><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Why we picked it</span>
+                  <i class="fa-solid fa-chevron-down recommendation-why__chevron" aria-hidden="true"></i>
+                </summary>
+                <div class="recommendation-why__content">
+                  <% search_area = @nomikai.area == "Selected on map" ? "your chosen meeting point" : @nomikai.area.presence || "your chosen area" %>
+                  <p><%= @used_fallback ? "Found through a broader search" : "Found through your group's restaurant search" %> near <%= search_area %>.</p>
+                  <% cuisine = place[:category].presence || place[:cuisine].to_s.humanize.presence %>
+                  <% if cuisine.present? %>
+                    <p><strong>Cuisine:</strong> <%= cuisine %></p>
+                  <% end %>
+                  <% high = place[:price_range].is_a?(Hash) ? place[:price_range]["endPrice"] : nil %>
+                  <% if @nomikai.budget_per_person.present? && price.present? %>
+                    <% if above_budget %>
+                      <p><strong>Budget:</strong> Above your budget.</p>
+                    <% elsif high.is_a?(Hash) && high["currencyCode"] == "JPY" && high["units"].to_i <= @nomikai.budget_per_person %>
+                      <p><strong>Budget:</strong> Within your budget (Google estimate).</p>
+                    <% elsif low.is_a?(Hash) && high.is_a?(Hash) && low["currencyCode"] == "JPY" && high["currencyCode"] == "JPY" %>
+                      <p><strong>Budget:</strong> The estimated price range overlaps your budget.</p>
+                    <% else %>
+                      <p><strong>Budget:</strong> Check the final price with the restaurant.</p>
+                    <% end %>
+                  <% else %>
+                    <p><strong>Budget:</strong> Price fit could not be verified.</p>
+                  <% end %>
+                  <p class="recommendation-why__note">Confirm prices, seating and dietary needs with the restaurant.</p>
+                </div>
+              </details>
+
+              <% if place[:google_maps_uri].present? || place[:website].present? %>
+                <div class="recommendation-actions">
+                  <% if place[:google_maps_uri].present? %>
+                    <%= link_to place[:google_maps_uri], class: "recommendation-map-link", target: "_blank", rel: "noopener noreferrer" do %>
+                      <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i> Maps
+                    <% end %>
+                  <% end %>
+                  <% if place[:website].present? %>
+                    <%= link_to place[:website], class: "recommendation-map-link", target: "_blank", rel: "noopener noreferrer" do %>
+                      Website <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                    <% end %>
+                  <% end %>
+                </div>
+              <% end %>
+              <%= render "restaurant_decision_sheet", candidate_id: place[:candidate_id], restaurant_name: place[:name],
+                  button_label: "Select restaurant", button_class: "recommendation-select-button", allow_vote: allow_vote %>
+
+              <% Array(place[:attributions]).each do |attribution| %>
+                <% if attribution["provider"].present? %>
+                  <p class="recommendations-attribution recommendation-provider-credit">
+                    <% if attribution["providerUri"].present? %>
+                      <%= link_to attribution["provider"], attribution["providerUri"], target: "_blank", rel: "noopener noreferrer" %>
+                    <% else %>
+                      <%= attribution["provider"] %>
+                    <% end %>
+                  </p>
+                <% end %>
+              <% end %>
+            </div>
           </article>
         <% end %>
       </div>
-      <p class="recommendations-note">Prices are estimates. Confirm the final price, seating and dietary requirements with the restaurant.</p>
-      <p class="recommendations-attribution" translate="no"></p>
+      <p class="recommendations-attribution" translate="no">Google Maps</p>
+      <p class="recommendations-note">Confirm prices, seating and dietary needs with the restaurant.</p>
     <% else %>
       <section class="recommendations-empty">
         <h2><%= @reshuffled ? "No more matches on this search" : "We couldn’t find a match yet" %></h2>
         <p>
-          <% if @nomikai.ongoing? %>
+          <% if @nomikai.collecting_swipes? %>
             Try a nearby area or adjust the budget, then search again.
           <% else %>
-            Go back to your gathering to start a fresh search.
+            Go back to your plan to start a fresh search.
           <% end %>
         </p>
-        <% if @nomikai.ongoing? %>
+        <% if @nomikai.collecting_swipes? %>
           <%= link_to "Adjust area or budget", edit_nomikai_path(@nomikai), class: "recommendations-empty__action" %>
         <% else %>
-          <%= link_to "Back to gathering", nomikai_path(@nomikai), class: "recommendations-empty__action" %>
+          <%= link_to "Back to plan", nomikai_path(@nomikai), class: "recommendations-empty__action" %>
         <% end %>
       </section>
     <% end %>
 
     <footer class="recommendations-footer">
       <% if @next_matches_token.present? %>
-        <%= button_to "↻  Find other matches", recommendations_nomikai_path(@nomikai),
+        <%= button_to "↻  Find other restaurants", recommendations_nomikai_path(@nomikai),
                       method: :post,
                       params: { continuation: @next_matches_token },
                       class: "recommendations-reshuffle-button",

@@ -1,30 +1,37 @@
-<main class="gathering-hub">
-  <header class="gathering-hub__header"><h1>Gatherings</h1></header>
+<main class="gathering-hub" data-joined-plans-signature="<%= joined_plans.signature %>">
+  <header class="gathering-hub__header"><h1>Plans</h1></header>
   <% if @ongoing_gathering %>
     <%= render "ongoing", gathering: @ongoing_gathering %>
-  <% else %>
+  <% elsif @joined_active.empty? %>
     <section class="gathering-idle">
       <span><i class="fa-solid fa-utensils" aria-hidden="true"></i></span>
-      <div><h2>Ready for the next bite?</h2><p>No ongoing gathering.</p></div>
-      <%= link_to new_nomikai_path, aria: { label: "Create a gathering" } do %><i class="fa-solid fa-arrow-right" aria-hidden="true"></i><% end %>
+      <div><h2>No active plan</h2><p>Start a new plan when you’re ready.</p></div>
+      <%= link_to new_nomikai_path, aria: { label: "Start plan" } do %><i class="fa-solid fa-arrow-right" aria-hidden="true"></i><% end %>
+    </section>
+  <% end %>
+  <% if @joined_active.any? %>
+    <section class="joined-plans" aria-labelledby="joined-active-title">
+      <h2 id="joined-active-title">Joined plans</h2>
+      <%= render partial: "joined_plan", collection: @joined_active, as: :person %>
     </section>
   <% end %>
   <section class="gathering-history">
     <h2>History</h2>
-    <% if @nomikais.any? %>
+    <% if @nomikais.any? || @joined_history.any? %>
       <% @nomikais.each do |gathering| %>
         <%= link_to nomikai_path(gathering), class: "gathering-history__row" do %>
           <span class="gathering-history__icon"><i class="fa-solid <%= gathering.meal_period == "lunch" ? "fa-sun" : "fa-moon" %>" aria-hidden="true"></i></span>
           <span class="gathering-history__details">
-            <strong><%= gathering.name %></strong>
+            <strong><%= plan_title(gathering) %></strong>
             <small><%= gathering.area == "Selected on map" ? "Pinned location" : gathering.area.capitalize %> · <%= gathering.group_size %> people</small>
-            <small><%= l(gathering.matches_found_at.to_date, format: :long) %></small>
+            <small><%= l((gathering.confirmed_at || gathering.matches_found_at).to_date, format: :long) %></small>
           </span>
           <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
         <% end %>
       <% end %>
+      <%= render partial: "joined_plan", collection: @joined_history, as: :person %>
     <% else %>
-      <p class="gathering-history__empty">No completed gatherings yet.</p>
+      <p class="gathering-history__empty">Your past plans will appear here.</p>
     <% end %>
   </section>
 </main>

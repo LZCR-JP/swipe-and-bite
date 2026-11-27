@@ -16,7 +16,7 @@
     </div>
     <section class="meeting-create__sheet">
       <div class="meeting-create__handle"></div>
-      <h1><%= @nomikai.persisted? ? "Edit gathering" : "Let's eat." %></h1>
+      <h1><%= @nomikai.persisted? ? "Edit plan" : "Let's eat." %></h1>
       <div class="meeting-create__location" role="status" aria-live="polite">
         <span class="meeting-create__location-icon"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></span>
         <div class="meeting-create__location-text">
@@ -45,7 +45,7 @@
         <div><strong>Budget per person</strong><small>JPY</small></div>
         <div class="meeting-create__budget">¥ <%= f.number_field :budget_per_person, min: 500, step: 1, placeholder: "Enter amount", required: true, aria: { label: "Budget per person in yen" }, inputmode: "numeric", data: { controller: "budget-input", action: "input->budget-input#format turbo:before-cache@document->budget-input#restore" } %></div>
       </div>
-      <%= f.submit(@nomikai.persisted? ? "Save changes" : "Create gathering", class: "meeting-create__submit") %>
+      <%= f.submit(@nomikai.persisted? ? "Save changes" : "Start plan", class: "meeting-create__submit") %>
     </section>
   <% end %>
 </div>

@@ -3,12 +3,12 @@ require "net/http"
 require "uri"
 
 class RestaurantPhotosController < ApplicationController
-  before_action :authenticate_user!
-
   def show
     expires_now
-    name = Rails.application.message_verifier(:restaurant_photo)
-                .verified(params[:token].to_s, purpose: :restaurant_photo)
+    verifier = Rails.application.message_verifier(:restaurant_photo)
+    name = verifier.verified(params[:token].to_s, purpose: :confirmed_restaurant_photo)
+    name ||= verifier.verified(params[:token].to_s, purpose: :participant_restaurant_photo)
+    name ||= verifier.verified(params[:token].to_s, purpose: :restaurant_photo) if user_signed_in?
     return head :not_found unless name.is_a?(String) && name.match?(%r{\Aplaces/[A-Za-z0-9_-]+/photos/[A-Za-z0-9_-]+\z})
 
     uri = URI("https://places.googleapis.com/v1/#{name}/media")

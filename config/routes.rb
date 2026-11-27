@@ -7,12 +7,17 @@ Rails.application.routes.draw do
 
   get "restaurant_photo", to: "restaurant_photos#show", as: :restaurant_photo
 
-  # Host side (logged in)
+  get "plan_updates", to: "nomikais#participant_updates", as: :plan_updates
+
+  # Host side (logged in, except shared Plans index)
   resources :nomikais do
 
     member do
       get :progress
+      get :confirmation_photo
       patch :close
+      post :start_host_swipes
+      get "candidates/:candidate_id/decision", action: :candidate_decision, as: :candidate_decision
 
       get :recommendations,
           action: :recommendations_landing,

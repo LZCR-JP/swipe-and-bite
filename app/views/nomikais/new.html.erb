@@ -1,8 +1,8 @@
 <% if @ongoing_gathering %>
   <main class="gathering-hub">
-    <h1>You're already planning.</h1>
+    <h1>You have an active plan</h1>
     <%= render "ongoing", gathering: @ongoing_gathering %>
-    <p class="gathering-hub__hint">Finish or cancel this gathering to start another.</p>
+    <p class="gathering-hub__hint">Finish or cancel this plan to start a new one.</p>
   </main>
 <% else %>
   <%= render "form" %>

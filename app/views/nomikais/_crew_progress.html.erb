@@ -1,0 +1,62 @@
+<% completed = people.count { |person| person.completed_at.present? } %>
+<% total = [nomikai.group_size, 1].max %>
+<% host = people.find { |person| person.user_id == nomikai.user_id } %>
+<% accepting = nomikai.accepting_participants? %>
+<% guests = people.reject(&:host?) %>
+<% guest_total = [total - 1, 0].max %>
+<% guest_completed = guests.count { |person| person.completed_at.present? } %>
+<% visible_people = guests.first(6) %>
+<% placeholders = [[guest_total - visible_people.size, 0].max, 6 - visible_people.size].min %>
+<% remaining_slots = [guest_total - visible_people.size - placeholders, guests.size - visible_people.size, 0].max %>
+<section class="plan-crew" aria-labelledby="crew-heading">
+  <div class="host-lobby__section-head">
+    <div><h2 id="crew-heading">Participants</h2><p><%= guests.size %> / <%= guest_total %> joined</p></div>
+    <button type="button" class="host-lobby__icon" aria-label="Refresh participants" data-action="lobby-progress#refresh"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i></button>
+  </div>
+  <div class="plan-crew__avatars" aria-label="<%= guests.size %> of <%= guest_total %> guests joined, <%= guest_completed %> finished swiping">
+    <% visible_people.each do |person| %>
+      <span class="plan-crew__avatar <%= 'is-ready' if person.completed_at.present? %>" title="<%= person.nickname %>"><%= person.nickname.to_s.first.to_s.upcase %><% if person.completed_at.present? %><i class="fa-solid fa-check" aria-hidden="true"></i><% end %></span>
+    <% end %>
+    <% placeholders.times do %><span class="plan-crew__avatar is-empty" aria-hidden="true"><i class="fa-solid fa-user-plus"></i></span><% end %>
+    <% if remaining_slots.positive? %><span class="plan-crew__avatar is-extra">+<%= remaining_slots %></span><% end %>
+  </div>
+  <div class="plan-crew__caption">
+    <% if completed >= total %><strong>Everyone’s ready!</strong><p>Time to find a restaurant.</p>
+    <% elsif guests.size < guest_total %><strong>Waiting for <%= pluralize(guest_total - guests.size, "friend") %> to join</strong><p>Share the invite to get started.</p>
+    <% elsif guest_total.zero? && guests.empty? %><strong>Just you</strong><p>Start swiping to find a restaurant.</p>
+    <% else %><strong>Waiting for everyone to finish</strong><p>Swipes are updated automatically.</p><% end %>
+  </div>
+  <div class="host-lobby__progress-label"><span>Swipes completed</span><strong><%= completed %> / <%= total %></strong></div>
+  <progress class="host-lobby__progress" value="<%= [completed, total].min %>" max="<%= total %>" aria-label="Completed responses"><%= completed %> / <%= total %></progress>
+  <% if guests.any? %>
+    <details class="plan-crew__details">
+      <summary>View participants <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary>
+      <div class="host-lobby__people">
+        <% guests.each do |person| %>
+          <div class="host-lobby__person">
+            <span class="host-lobby__avatar" aria-hidden="true"><%= person.nickname.to_s.first.to_s.upcase %></span>
+            <strong><%= person.nickname %></strong>
+            <% if person.completed_at.present? %><span class="host-lobby__finished"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Finished</span>
+            <% else %><span class="host-lobby__pending">Swiping</span><% end %>
+          </div>
+        <% end %>
+      </div>
+    </details>
+  <% end %>
+</section>
+<section class="plan-actions" aria-label="Next steps">
+  <% if host&.completed_at.present? %>
+    <div class="plan-actions__done"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Your swipes are saved.</div>
+  <% elsif accepting %>
+    <%= button_to start_host_swipes_nomikai_path(nomikai), method: :post, class: "host-lobby__swipe plan-actions__swipe", form: { class: "w-100" } do %>
+      <i class="fa-regular fa-heart" aria-hidden="true"></i> <%= host ? "Continue swiping" : "Start swiping" %> <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+    <% end %>
+  <% end %>
+  <% if completed.zero? %>
+    <button class="host-lobby__primary" disabled>Find restaurants</button>
+    <p>At least one person needs to finish.</p>
+  <% else %>
+    <%= button_to "Find restaurants", recommendations_nomikai_path(nomikai), method: :post, class: "host-lobby__primary", form: { data: { turbo: false, controller: "match-loading", action: "submit->match-loading#start pageshow@window->match-loading#reset turbo:before-cache@document->match-loading#reset" } } %>
+    <% if completed < total %><p><%= total - completed %> still to go. Wait to include everyone's dietary needs.</p><% else %><p>All responses are in.</p><% end %>
+  <% end %>
+</section>

@@ -1,0 +1,26 @@
+<main class="host-lobby">
+  <header class="host-lobby__top">
+    <%= link_to nomikai_path(@nomikai), class: "host-lobby__icon", aria: { label: "Back to plan" } do %><i class="fa-solid fa-arrow-left" aria-hidden="true"></i><% end %>
+  </header>
+  <h1>Choose how to decide</h1>
+  <section class="host-lobby__selected">
+    <h2><%= @candidate.venue.name.presence || "Restaurant" %></h2>
+    <p><%= @candidate.venue.formatted_address %></p>
+    <% maps_url = @candidate.venue.google_maps_uri.presence || "https://www.google.com/maps/search/?api=1&query=restaurant&query_place_id=#{ERB::Util.url_encode(@candidate.venue.google_place_id)}" %>
+    <%= link_to "Open in Google Maps", maps_url, class: "host-lobby__maps-link", target: "_blank", rel: "noopener noreferrer" %>
+  </section>
+  <section class="host-lobby__action">
+    <%= button_to "Confirm restaurant", select_candidate_nomikai_path(@nomikai, candidate_id: @candidate.id), method: :patch, params: { decision: "confirm" }, class: "host-lobby__primary", form: { data: { turbo_confirm: "Confirm this restaurant for everyone? Make sure your reservation or seating is arranged if needed." } } %>
+    <p>Decide yourself and share the final spot with everyone.</p>
+  </section>
+  <% if @nomikai.decision_state != "voting" && @nomikai.voting_participants.exists? %>
+    <section class="host-lobby__action">
+      <%= button_to "Ask participants", select_candidate_nomikai_path(@nomikai, candidate_id: @candidate.id), method: :patch, params: { decision: "vote" }, class: "host-lobby__primary" %>
+      <p>Everyone else votes. You make the final decision.</p>
+    </section>
+  <% elsif !@nomikai.voting_participants.exists? %>
+    <p>No other participants have joined.</p>
+  <% end %>
+  <p>Swipe &amp; Bite does not make a reservation.</p>
+  <%= button_to "See other restaurants", recommendations_nomikai_path(@nomikai), method: :post, class: "recommendations-reshuffle-button" unless @nomikai.decision_state == "voting" %>
+</main>

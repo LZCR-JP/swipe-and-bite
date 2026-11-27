@@ -4,6 +4,7 @@ class ParticipantsController < ApplicationController
              with: -> { redirect_to join_code_path, alert: "Too many attempts. Please wait a minute and try again." }
 
   before_action :set_entry_point, only: %i[new create]
+  before_action :prevent_host_join, only: %i[new create]
   before_action :ensure_open, only: %i[new create]
 
   def new
@@ -39,6 +40,14 @@ class ParticipantsController < ApplicationController
   def show
     @participant = Participant.find_by!(token: params[:token])
     @nomikai = @participant.nomikai
+    if current_user && current_user.id == @nomikai.user_id
+      return redirect_to nomikai_path(@nomikai)
+    end
+    return head :forbidden if @participant.host?
+    if request.format.json?
+      expires_now
+      return render json: { signature: @nomikai.decision_signature }
+    end
     @swipes = @participant.swipes.includes(nomikai_vibe_card: :vibe_card).order(:created_at)
     @liked_vibes = @swipes.filter_map { |swipe| swipe.nomikai_vibe_card.vibe_card.title if swipe.liked? }
     @passed_vibes = @swipes.filter_map { |swipe| swipe.nomikai_vibe_card.vibe_card.title unless swipe.liked? }
@@ -46,22 +55,17 @@ class ParticipantsController < ApplicationController
                                   .includes(:venue)
                                   .find_by(selected: true)
 
-    if @selected_candidate && (@selected_candidate.venue.name.blank? || @selected_candidate.venue.primary_type.blank?)
-      venue = @selected_candidate.venue
-      details = GooglePlaceDetails.new(venue.google_place_id).call || {}
-      venue.assign_attributes(
-        name: venue.name.presence || details[:name],
-        primary_type: venue.primary_type.presence || details[:primary_type],
-        formatted_address: venue.formatted_address.presence || details[:formatted_address],
-        google_maps_uri: venue.google_maps_uri.presence || details[:google_maps_uri],
-        price_level: venue.price_level.presence || details[:price_level],
-        rating: venue.rating.presence || details[:rating]
-      )
-      venue.save! if venue.changed?
-    end
+    @selected_candidate = nil unless @nomikai.restaurant_feedback_open? || @nomikai.confirmed?
 
-    @selected_restaurant_name = @selected_candidate&.venue&.name
-    @selected_restaurant_cuisine = @selected_candidate&.venue&.primary_type
+    @restaurant_details = {}
+    if @selected_candidate
+      venue = @selected_candidate.venue
+      # Fetch only on the HTML view, never on the five-second status poll.
+      # Photo references and prices are used for this response, not persisted.
+      @restaurant_details = GooglePlaceDetails.new(
+        venue.google_place_id, include_photo: true, include_price_range: true
+      ).call || {}
+    end
 
     @candidate_vote = if @selected_candidate
                         @participant.candidate_votes.find_by(
@@ -94,11 +98,14 @@ class ParticipantsController < ApplicationController
       )
     end
 
+    @nomikai = @invitation.nomikai
+    if current_user && @nomikai.user_id == current_user.id
+      return redirect_to nomikai_path(@nomikai), notice: "This is your plan."
+    end
     if @invitation.accepted? && @invitation.participant
+      return head :forbidden if @invitation.participant.host?
       return redirect_to resume_path(@invitation.participant)
     end
-
-    @nomikai = @invitation.nomikai
     @join_path = invite_path(@invitation.token)
   end
 
@@ -113,8 +120,16 @@ class ParticipantsController < ApplicationController
     @join_path = join_with_code_path(@nomikai.formatted_join_code)
   end
 
+  def prevent_host_join
+    return unless current_user && @nomikai.user_id == current_user.id
+
+    redirect_to nomikai_path(@nomikai), notice: "This is your plan. Start swiping from your host screen."
+  end
+
   def ensure_open
     return if @nomikai.accepting_participants?
+    existing = existing_participant
+    return redirect_to resume_path(existing), status: :see_other if existing
 
     render_unavailable("This event is no longer accepting new teammates.", status: :forbidden)
   end
@@ -150,7 +165,7 @@ class ParticipantsController < ApplicationController
   end
 
   def resume_path(participant)
-    if participant.completed_at.present? || !participant.nomikai.ongoing?
+    if participant.completed_at.present? || !participant.nomikai.collecting_swipes?
       participant_path(participant.token)
     else
       participant_swipes_path(participant.token)

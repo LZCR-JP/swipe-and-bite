@@ -17,3 +17,11 @@ body {
   background: $background-cream;
   color: $text-primary;
 }
+
+@import "pages/plan_lobby";
+
+@import "pages/joined_plans";
+
+@import "pages/restaurant_decision";
+
+@import "pages/participant_focus";

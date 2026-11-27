@@ -1,0 +1,26 @@
+<div data-controller="plan-notifications" data-action="turbo:before-cache@document->plan-notifications#beforeCache" data-plan-notifications-url-value="<%= plan_updates_path(format: :json) %>">
+  <aside class="plan-notification" data-plan-notifications-target="banner" hidden aria-label="Plan update">
+    <%= tag.i class: "fa-solid fa-bell plan-notification__icon", aria: { hidden: true } %>
+    <a data-plan-notifications-target="link" data-turbo="false">
+      <strong data-plan-notifications-target="heading" role="status"></strong>
+      <small data-plan-notifications-target="description"></small>
+    </a>
+    <button type="button" aria-label="Dismiss notification" data-action="plan-notifications#dismiss"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+  </aside>
+  <dialog class="confirmation-celebration" data-plan-notifications-target="celebration" data-action="close->plan-notifications#celebrationClosed" aria-labelledby="confirmation-title">
+    <div class="confirmation-celebration__confetti" data-plan-notifications-target="confetti" aria-hidden="true"></div>
+    <div class="confirmation-celebration__body">
+      <div class="confirmation-celebration__check"><i class="fa-solid fa-check" aria-hidden="true"></i></div>
+      <h2 id="confirmation-title">It's confirmed!</h2>
+      <p>See you there.</p>
+      <figure class="confirmation-celebration__photo" data-plan-notifications-target="photoFrame" hidden>
+        <img data-plan-notifications-target="photo" alt="" decoding="async">
+        <figcaption data-plan-notifications-target="credits"></figcaption>
+      </figure>
+      <h3 data-plan-notifications-target="restaurant"></h3>
+      <p data-plan-notifications-target="address"></p>
+      <a class="confirmation-celebration__button" data-plan-notifications-target="planLink" data-turbo="false">View restaurant <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+      <button type="button" class="confirmation-celebration__dismiss" data-action="plan-notifications#closeCelebration">Done</button>
+    </div>
+  </dialog>
+</div>

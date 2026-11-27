@@ -1,0 +1,13 @@
+<% plan = person.nomikai %>
+<% state = joined_plans.status(person) %>
+<% labels = { "swipe" => "Continue swiping", "waiting" => "Waiting for the host", "review" => "Host is choosing a restaurant", "vote" => "Vote now", "voted" => "Waiting for votes", "awaiting_confirmation" => "Waiting for host confirmation", "confirmed" => "Restaurant confirmed" } %>
+<% destination = state == "swipe" ? participant_swipes_path(person.token) : participant_path(person.token) %>
+<%= link_to destination, class: "joined-plan-card", data: { plan_state: state } do %>
+  <span class="joined-plan-card__icon"><i class="fa-solid <%= state == 'confirmed' ? 'fa-check' : (state == 'vote' ? 'fa-thumbs-up' : 'fa-utensils') %>" aria-hidden="true"></i></span>
+  <span class="joined-plan-card__body">
+    <strong><%= plan_title(plan) %></strong>
+    <small><%= plan.area == 'Selected on map' ? 'Meeting point' : plan.area %> · <%= plan.group_size %> people</small>
+    <span class="joined-plan-card__state"><%= labels.fetch(state) %></span>
+  </span>
+  <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+<% end %>

@@ -1,0 +1,21 @@
+<figure class="participant-restaurant__photo" data-controller="restaurant-preview">
+  <div class="participant-restaurant__image">
+    <div class="participant-restaurant__placeholder" data-restaurant-preview-target="fallback">
+      <i class="fa-solid fa-utensils" aria-hidden="true"></i>
+      <span data-restaurant-preview-target="message"><%= details[:photo_name].present? ? "Loading photo…" : "Photo unavailable" %></span>
+    </div>
+    <% if details[:photo_name].present? %>
+      <% token = Rails.application.message_verifier(:restaurant_photo).generate(details[:photo_name], expires_in: 15.minutes, purpose: :participant_restaurant_photo) %>
+      <%= image_tag restaurant_photo_path(token: token), alt: "Photo of #{restaurant_name}", decoding: "async", data: { restaurant_preview_target: "image", action: "load->restaurant-preview#loaded error->restaurant-preview#failed" } %>
+    <% end %>
+  </div>
+  <% if details[:photo_name].present? && details[:photo_attributions].present? %>
+    <figcaption data-restaurant-preview-target="credit">
+      <% details[:photo_attributions].each do |author| %>
+        <% if author["displayName"].present? %>
+          <% if author["uri"].present? %><%= link_to author["displayName"], author["uri"], target: "_blank", rel: "noopener noreferrer" %><% else %><%= author["displayName"] %><% end %>
+        <% end %>
+      <% end %>
+    </figcaption>
+  <% end %>
+</figure>

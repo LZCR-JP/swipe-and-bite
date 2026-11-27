@@ -25,6 +25,7 @@
 
   <body>
     <%= render "shared/navbar" %>
+    <%= render "shared/plan_notifications" if user_signed_in? || joined_plans.entries.any? %>
     <%= yield %>
   </body>
 </html>
