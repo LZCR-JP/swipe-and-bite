@@ -1,6 +1,6 @@
 class NomikaisController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_nomikai, only: %i[show destroy close progress recommendations recommendations_landing select_candidate]
+  before_action :set_nomikai, only: %i[show destroy close progress start_swipes recommendations recommendations_landing select_candidate]
 
   def index
     @ongoing_gathering = current_user.nomikais.ongoing.includes(:participants).first
@@ -105,6 +105,24 @@ class NomikaisController < ApplicationController
       completed: @nomikai.participants.where.not(completed_at: nil).count,
       total: @nomikai.group_size
     }
+  end
+
+  def start_swipes
+    participant = nil
+
+    @nomikai.with_lock do
+      if @nomikai.ongoing?
+        participant = @nomikai.participants.find_or_create_by!(user: current_user) do |record|
+          record.nickname = current_user.name.to_s.strip.truncate(30)
+        end
+      end
+    end
+
+    if participant&.completed_at.present? || !@nomikai.ongoing?
+      redirect_to nomikai_path(@nomikai), status: :see_other
+    else
+      redirect_to participant_swipes_path(participant.token), status: :see_other
+    end
   end
 
   def recommendations
