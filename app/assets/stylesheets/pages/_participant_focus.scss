@@ -1,0 +1,65 @@
+// A participant has one task here: review the host's restaurant and vote.
+.participant-page--focused {
+  min-height: calc(100vh - 78px);
+  padding: 16px 18px 108px;
+  background: #fff;
+  color: #171717;
+  font-family: $body-font;
+  h1, h2, button { font-family: inherit; }
+  .participant-dashboard { max-width: 520px; }
+  .participant-focus-header {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    margin-bottom: 20px; font-size: 13px; font-weight: 650; color: #666;
+  }
+  .participant-focus-header__icon {
+    display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 42px;
+    border-radius: 50%; background: #f4f4f4; color: #171717; text-decoration: none;
+  }
+  .participant-focus-heading { margin: 0 0 18px; }
+  .participant-focus-heading h1 { margin: 0 0 6px; font-size: 27px; font-weight: 750; line-height: 1.17; letter-spacing: -.035em; }
+  .participant-focus-heading p { color: #666; font-size: 14px; margin: 0; line-height: 1.4; }
+  .participant-focus-heading__status { display: inline-flex; align-items: center; gap: 6px; color: #287a43; font-size: 12px; font-weight: 700; margin-bottom: 8px; }
+  .participant-restaurant { border: 0; border-radius: 20px; overflow: hidden; background: #f5f5f5; }
+  .participant-restaurant__photo { margin: 0; }
+  .participant-restaurant__image { position: relative; aspect-ratio: 16 / 9; background: #f4f4f4; overflow: hidden; }
+  .participant-restaurant__image img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; }
+  .participant-restaurant__image img.is-loaded { opacity: 1; transition: opacity 180ms ease; }
+  .participant-restaurant__placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; color: #777; font-size: 12px; }
+  .participant-restaurant__placeholder i { font-size: 28px; color: #999; }
+  .participant-restaurant [hidden] { display: none !important; }
+  .participant-restaurant__photo figcaption { padding: 5px 14px 0; color: #666; font-size: 10px; overflow-wrap: anywhere; }
+  .participant-restaurant__photo figcaption a, .participant-restaurant__credit a { color: inherit; text-decoration: underline; }
+  .participant-restaurant__body { padding: 16px; }
+  .participant-restaurant h2 { margin: 0 0 8px; font-size: 21px; font-weight: 750; line-height: 1.3; overflow-wrap: anywhere; }
+  .participant-restaurant__price { margin: 0; font-weight: 700; font-size: 18px; line-height: 1.3; }
+  .participant-restaurant__price span { font-size: 11px; font-weight: 500; color: #666; }
+  .participant-restaurant__address { display: flex; align-items: baseline; gap: 8px; margin: 12px 0; color: #666; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+  .participant-restaurant__address i { color: #555555; }
+  .participant-restaurant__maps { display: flex; justify-content: center; align-items: center; gap: 9px; min-height: 44px; margin-top: 14px; padding: 10px; border: 1px solid #ddd; border-radius: 12px; color: #171717; text-decoration: none; font-size: 13px; font-weight: 650; }
+  .participant-restaurant__maps:hover { color: #171717; background: #f6f6f6; }
+  .participant-restaurant__credit { margin: 8px 0 0; font-size: 10px; color: #666; text-align: right; }
+  .participant-decision { margin-top: 22px; }
+  .participant-decision h2 { margin: 0 0 12px; font-size: 18px; font-weight: 700; }
+  .participant-vote-actions { grid-template-columns: 1fr; gap: 9px; margin: 0; }
+  .participant-vote-button { min-height: 49px; font-size: 15px; font-weight: 700; border-radius: 13px; transition: transform 160ms ease, background 160ms ease; }
+  .participant-vote-button:active { transform: scale(.98); }
+  .participant-vote-button--approve { color: #fff; background: #171717; border-color: #171717; }
+  .participant-vote-button--approve:hover { color: #fff; background: #333333; }
+  .participant-vote-button--alternative { color: #171717; border-color: #ddd; background: #fff; }
+  .participant-vote-button--alternative:hover { background: #f6f6f6; }
+  .participant-decision__note { margin: 12px 0 0; text-align: center; color: #666; font-size: 12px; }
+  .participant-decision__saved { display: flex; align-items: center; gap: 8px; padding: 14px; border-radius: 12px; background: #eef7f0; color: #226a3c; font-size: 13px; }
+  .participant-decision__progress { display: flex; justify-content: space-between; margin-top: 18px; color: #666; font-size: 13px; }
+  .participant-decision progress { width: 100%; height: 7px; border: 0; border-radius: 8px; overflow: hidden; accent-color: #171717; }
+  .participant-decision progress::-webkit-progress-bar { background: #e9e9e9; }
+  .participant-decision progress::-webkit-progress-value { background: #171717; }
+  .participant-decision progress::-moz-progress-bar { background: #171717; }
+  .participant-focus-header__icon:focus-visible, .participant-restaurant__maps:focus-visible, .participant-vote-button:focus-visible { outline: 2px solid #555555; outline-offset: 3px; }
+}
+@media (max-width: 360px) {
+  .participant-page--focused { padding-left: 12px; padding-right: 12px; }
+  .participant-page--focused .participant-focus-heading h1 { font-size: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .participant-page--focused .participant-vote-button, .participant-page--focused .participant-restaurant__image img.is-loaded { transition: none; }
+}

@@ -11,7 +11,7 @@ class ParticipantsControllerTest < ActionDispatch::IntegrationTest
       get @join_path
     end
     assert_response :success
-    assert_match "Join the table", response.body
+    assert_match "Join this plan?", response.body
     assert_match "3,500", response.body
     assert_no_match 'name="participant[nickname]"', response.body
   end

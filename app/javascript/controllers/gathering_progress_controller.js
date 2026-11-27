@@ -33,7 +33,7 @@ export default class extends Controller {
         return
       }
       const total = Math.max(1, progress.total)
-      this.labelTarget.textContent = progress.completed >= total ? "Ready to find matches" : "Waiting for responses"
+      this.labelTarget.textContent = progress.matches_ready ? (progress.decision_state === "voting" ? "Waiting for votes" : "Choosing a restaurant") : progress.completed >= total ? "Ready to find matches" : "Waiting for responses"
       this.countTarget.textContent = `${progress.completed} / ${total}`
       this.barTarget.max = total
       this.barTarget.value = Math.min(progress.completed, total)

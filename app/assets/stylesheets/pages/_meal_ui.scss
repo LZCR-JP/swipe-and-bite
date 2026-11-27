@@ -6,11 +6,11 @@
   --sb-text: #171717;
   --sb-muted: #666;
   --sb-line: #e4e4e4;
-  --sb-accent: #b84a00;
-  --sb-orange: #ff6900;
+  --sb-accent: #555555;
+  --sb-orange: #171717;
   color: var(--sb-text);
   background: var(--sb-bg);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: $body-font;
   font-size: 15px;
   line-height: 1.4;
   h1, h2, button, input { font-family: inherit; }
@@ -82,7 +82,7 @@ body:has(.meeting-create, .host-lobby, .gathering-hub) { background: $background
   &__selected-cuisine strong { color: var(--sb-text); font-weight: 650; }
   &__selected-badge { display: inline-flex; flex-shrink: 0; align-items: center; gap: 5px; padding: 6px 10px; border-radius: 999px; background: #e5f4e9; color: #287a43; font-size: 11px; font-weight: 700; }
   &__maps-link { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; margin-top: 15px; padding: 0 14px; border-radius: 12px; background: var(--sb-orange); color: #fff; font-weight: 700; text-decoration: none; }
-  &__maps-link:hover { background: #e95f00; color: #fff; }
+  &__maps-link:hover { background: #333333; color: #fff; }
   &__feedback { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--sb-line); }
   &__feedback h3 { margin: 0; font-size: 15px; font-weight: 700; }
   &__feedback .host-lobby__section-head strong { color: var(--sb-accent); font-size: 13px; white-space: nowrap; }
@@ -113,7 +113,7 @@ body:has(.meeting-create, .host-lobby, .gathering-hub) { background: $background
   &__empty { display: flex; align-items: center; gap: 10px; padding: 18px 0 7px; color: var(--sb-muted); font-size: 13px; }
   &__person { display: flex; align-items: center; gap: 10px; min-height: 52px; border-bottom: 1px solid var(--sb-line); font-size: 14px; }
   &__person strong { flex: 1; min-width: 0; overflow-wrap: anywhere; font-weight: 600; }
-  &__avatar { display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border: 1px solid rgba(255, 105, 0, .2); border-radius: 50%; background: linear-gradient(145deg, #fff2e8, #ffe2cb); color: #b84700; font-size: 13px; font-weight: 800; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8); }
+  &__avatar { display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border: 1px solid rgba(23, 23, 23, .2); border-radius: 50%; background: linear-gradient(145deg, #f5f5f5, #f5f5f5); color: #555555; font-size: 13px; font-weight: 800; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8); }
   &__finished, &__pending { font-size: 12px; color: var(--sb-muted); }
   &__finished i { color: var(--sb-accent); }
   &__people { margin-top: 10px; }
@@ -240,14 +240,14 @@ body:has(.meeting-create, .host-lobby, .gathering-hub) { background: $background
   min-height: calc(100dvh - 78px);
   margin: 0 auto;
   padding: 24px 20px 32px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: $body-font;
   color: #171717;
-  h1 { font: 750 30px/1.15 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: -.9px; margin: 0 0 24px; }
-  h2 { font: 700 20px/1.25 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0 0 12px; }
+  h1 { font: 750 30px/1.15 $body-font; letter-spacing: -.9px; margin: 0 0 24px; }
+  h2 { font: 700 20px/1.25 $body-font; margin: 0 0 12px; }
   &__hint { color: #707070; font-size: 14px; margin: 18px 0; }
 }
-.gathering-status { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 650; color: #a64100; margin: 14px 0; }
-.gathering-status__dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #ff6900; box-shadow: 0 0 0 4px #ff690022; }
+.gathering-status { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 650; color: #555555; margin: 14px 0; }
+.gathering-status__dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #171717; box-shadow: 0 0 0 4px #17171722; }
 .ongoing-card {
   padding: 20px;
   border: 1px solid $border-light;

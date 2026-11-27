@@ -1,0 +1,17 @@
+<% plan = person.nomikai %>
+<% state = joined_plans.status(person) %>
+<% labels = { "swipe" => "Continue swiping", "waiting" => "Waiting for the host", "review" => "Host is choosing a restaurant", "vote" => "Vote now", "voted" => "Waiting for votes", "awaiting_confirmation" => "Waiting for host confirmation", "confirmed" => "Restaurant confirmed" } %>
+<% destination = state == "swipe" ? participant_swipes_path(person.token) : participant_path(person.token) %>
+<% photo_available = history_photo_available?(plan) %>
+<div class="history-photo-row" <%= tag.attributes(data: { controller: "history-photo", history_photo_url_value: confirmation_photo_nomikai_path(plan, format: :json), action: "turbo:before-cache@document->history-photo#reset" }) if photo_available %>>
+  <%= link_to destination, class: "joined-plan-card", data: { plan_state: state } do %>
+    <%= render "nomikais/history_thumbnail", plan: plan, icon_class: "joined-plan-card__icon", fallback_icon: (state == "confirmed" ? "fa-utensils" : (state == "vote" ? "fa-thumbs-up" : "fa-utensils")) %>
+    <span class="joined-plan-card__body">
+      <strong><%= plan_list_title(plan) %></strong>
+      <small><%= plan.area == 'Selected on map' ? 'Meeting point' : plan.area %> · <%= plan.group_size %> people</small>
+      <span class="joined-plan-card__state"><%= labels.fetch(state) %></span>
+    </span>
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+  <% end %>
+  <% if photo_available %><div class="history-photo-credit" data-history-photo-target="credit" hidden></div><% end %>
+</div>

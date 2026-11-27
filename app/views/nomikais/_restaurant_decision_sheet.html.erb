@@ -1,0 +1,31 @@
+<div class="restaurant-decision" data-controller="restaurant-decision" data-action="turbo:before-cache@document->restaurant-decision#close">
+  <%= link_to button_label, candidate_decision_nomikai_path(@nomikai, candidate_id: candidate_id),
+      class: button_class, data: { action: "restaurant-decision#open", restaurant_decision_target: "trigger" },
+      aria: { haspopup: "dialog" } %>
+  <dialog class="restaurant-decision__sheet" aria-labelledby="restaurant-decision-title-<%= candidate_id %>"
+          data-restaurant-decision-target="sheet" data-action="click->restaurant-decision#backdrop close->restaurant-decision#restoreFocus">
+    <div class="restaurant-decision__content">
+      <div class="restaurant-decision__header">
+        <div>
+          <h2 id="restaurant-decision-title-<%= candidate_id %>">Make a decision</h2>
+          <p><%= restaurant_name.presence || "Restaurant" %></p>
+        </div>
+        <button type="button" class="restaurant-decision__close" aria-label="Close" data-action="restaurant-decision#close" autofocus><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+      </div>
+      <%= button_to select_candidate_nomikai_path(@nomikai, candidate_id: candidate_id), method: :patch, params: { decision: "confirm" }, class: "restaurant-decision__option restaurant-decision__option--primary", form: { data: { turbo_confirm: "Confirm this restaurant for everyone? Make sure seating is arranged if needed." } } do %>
+        <i class="fa-solid fa-check" aria-hidden="true"></i>
+        <span><strong>Confirm restaurant</strong><small>Decide now and notify everyone.</small></span>
+        <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+      <% end %>
+      <% if allow_vote %>
+        <%= button_to select_candidate_nomikai_path(@nomikai, candidate_id: candidate_id), method: :patch, params: { decision: "vote" }, class: "restaurant-decision__option" do %>
+          <i class="fa-solid fa-user-group" aria-hidden="true"></i>
+          <span><strong>Ask participants</strong><small>Collect votes, then make the final decision.</small></span>
+          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+        <% end %>
+      <% end %>
+      <p class="restaurant-decision__note">Swipe &amp; Bite does not make reservations.</p>
+      <button type="button" class="restaurant-decision__cancel" data-action="restaurant-decision#close">Cancel</button>
+    </div>
+  </dialog>
+</div>

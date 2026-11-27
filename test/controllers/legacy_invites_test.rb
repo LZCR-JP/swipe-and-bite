@@ -52,7 +52,7 @@ class LegacyInvitesTest < ActionDispatch::IntegrationTest
   test "existing share links still allow joining" do
     get join_path(@nomikai.share_token)
     assert_response :success
-    assert_select "h1", text: "Join the table."
+    assert_select "h1", text: "Join this plan?"
 
     assert_difference -> { @nomikai.participants.count }, 1 do
       post join_path(@nomikai.share_token)

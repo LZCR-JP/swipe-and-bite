@@ -16,6 +16,8 @@ class JoinCodesController < ApplicationController
         "Enter the code your host shared with you."
       elsif nomikai.nil?
         "We couldn't find an event with that code. Double-check it with your host. It may have been replaced."
+      elsif current_user && nomikai.user_id == current_user.id
+        return redirect_to nomikai_path(nomikai), notice: "This is your plan. Start swiping from your host screen."
       elsif !nomikai.accepting_participants?
         "This event is no longer accepting new teammates."
       end

@@ -1,0 +1,35 @@
+// Expressive type, restrained colour. Keep icon fonts and Japanese fallbacks intact.
+.sb-emoji {
+  display: inline-block;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  font-weight: 400;
+  font-size: .85em;
+  line-height: 1;
+  letter-spacing: normal;
+  vertical-align: .02em;
+}
+.meeting-create__meal .sb-emoji { font-size: 1.15em; }
+.swipe-card__type .sb-emoji { font-size: 1.15em; }
+
+.meeting-create h1,
+.swipe-page-header h1,
+.recommendations-page h1,
+.host-lobby h1,
+.gathering-hub__header h1,
+.participant-page--focused .participant-focus-heading h1,
+.quick-join .join-header h1 {
+  font-weight: 800;
+  letter-spacing: -.045em;
+  line-height: 1.12;
+}
+.swipe-card h2,
+.participant-page--focused .participant-restaurant h2 {
+  font-weight: 650;
+  letter-spacing: -.022em;
+}
+.meeting-create__submit,
+.swipe-action,
+.participant-vote-button,
+.host-lobby__primary {
+  letter-spacing: -.012em;
+}

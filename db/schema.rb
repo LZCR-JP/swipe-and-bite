@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_26_073000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_27_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -81,10 +81,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_073000) do
     t.string "join_code", null: false
     t.string "meal_period", default: "dinner", null: false
     t.datetime "matches_found_at"
+    t.string "decision_state", default: "pending", null: false
+    t.integer "decision_round", default: 0, null: false
+    t.datetime "confirmed_at"
     t.index ["join_code"], name: "index_nomikais_on_join_code", unique: true
     t.index ["share_token"], name: "index_nomikais_on_share_token", unique: true
     t.index ["user_id"], name: "index_nomikais_on_user_id"
-    t.index ["user_id"], name: "index_nomikais_one_ongoing_per_user", unique: true, where: "(((status)::text = 'open'::text) AND (matches_found_at IS NULL))"
+    t.index ["user_id"], name: "index_nomikais_one_ongoing_per_user", unique: true, where: "(((status)::text = 'open'::text) AND ((decision_state)::text = ANY ((ARRAY['pending'::character varying, 'voting'::character varying, 'rejected'::character varying])::text[])))"
   end
 
   create_table "participants", force: :cascade do |t|

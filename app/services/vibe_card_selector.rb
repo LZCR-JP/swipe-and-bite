@@ -1,5 +1,7 @@
 class VibeCardSelector
-  CARD_LIMIT = 15
+  CARD_LIMIT = 8
+  FOOD_TARGET = 4
+  ATMOSPHERE_TARGET = 4
 
   def initialize(nomikai)
     @nomikai = nomikai
@@ -34,7 +36,7 @@ class VibeCardSelector
 
   def fallback_cards
     @fallback_used = true
-    random_cards(photo_cards)
+    balanced_cards(photo_cards)
   end
 
   def photo_cards
@@ -43,7 +45,7 @@ class VibeCardSelector
   end
 
   def matching_cards
-    random_cards(filter_by_budget(filter_by_group_size(photo_cards)))
+    balanced_cards(filter_by_budget(filter_by_group_size(photo_cards)))
   end
 
   def filter_by_group_size(scope)
@@ -61,8 +63,35 @@ class VibeCardSelector
          .where("max_budget IS NULL OR max_budget >= ?", budget)
   end
 
-  def random_cards(scope)
-    scope.order(Arel.sql("RANDOM()")).limit(CARD_LIMIT)
+  # Keep one shared deck per plan; only newly generated decks use this limit.
+  def balanced_cards(scope)
+    pool = scope.to_a.shuffle
+    food, other = pool.partition { |card| card.image_type == "food" }
+    atmosphere = other.select { |card| %w[venue people].include?(card.image_type) }
+
+    chosen = diverse_cards(food, FOOD_TARGET) { |card| cuisine_key(card) }
+    chosen += diverse_cards(atmosphere, ATMOSPHERE_TARGET) { |card| vibe_key(card) }
+
+    # Never expand outside the budget/group filter just to reach eight cards.
+    # If either type is scarce, use other eligible photos without duplicates.
+    remaining = pool - chosen
+    chosen.concat(remaining.take(CARD_LIMIT - chosen.size))
+    chosen.shuffle
+  end
+
+  def diverse_cards(cards, limit)
+    groups = cards.group_by { |card| yield(card) }
+    chosen = groups.values.map(&:first).take(limit)
+    chosen + (cards - chosen).take(limit - chosen.size)
+  end
+
+  def cuisine_key(card)
+    card.cuisine.to_s.strip.downcase
+  end
+
+  def vibe_key(card)
+    scores = (card.vibe_scores || {}).select { |_, score| score.is_a?(Numeric) }
+    scores.max_by { |_, score| score }&.first || "unspecified"
   end
 
   def matches_event_limits?(card)

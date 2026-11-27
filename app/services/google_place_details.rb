@@ -5,8 +5,10 @@ require "uri"
 class GooglePlaceDetails
   BASE_URL = "https://places.googleapis.com/v1/places"
 
-  def initialize(place_id)
+  def initialize(place_id, include_photo: false, include_price_range: false)
     @place_id = place_id
+    @include_photo = include_photo
+    @include_price_range = include_price_range
   end
 
   def call
@@ -22,7 +24,11 @@ class GooglePlaceDetails
       formatted_address: place["formattedAddress"],
       google_maps_uri: place["googleMapsUri"],
       price_level: place["priceLevel"],
-      rating: place["rating"]
+      rating: place["rating"],
+      price_range: place["priceRange"],
+      attributions: place["attributions"],
+      photo_name: place["photos"]&.first&.dig("name"),
+      photo_attributions: place["photos"]&.first&.dig("authorAttributions")
     }.compact
   rescue JSON::ParserError, Net::OpenTimeout, Net::ReadTimeout, SocketError,
          IOError, SystemCallError, OpenSSL::SSL::SSLError => e
@@ -47,7 +53,15 @@ class GooglePlaceDetails
   def build_request
     request = Net::HTTP::Get.new(uri)
     request["X-Goog-Api-Key"] = api_key
-    request["X-Goog-FieldMask"] = "displayName,primaryTypeDisplayName,formattedAddress,googleMapsUri,priceLevel,rating"
+    request["X-Goog-FieldMask"] = if @include_price_range
+                                    fields = %w[displayName formattedAddress googleMapsUri priceRange attributions]
+                                    fields << "photos" if @include_photo
+                                    fields.join(",")
+                                  elsif @include_photo
+                                    "photos"
+                                  else
+                                    "displayName,primaryTypeDisplayName,formattedAddress,googleMapsUri,priceLevel,rating"
+                                  end
     request
   end
 

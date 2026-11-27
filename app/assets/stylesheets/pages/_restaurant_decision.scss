@@ -1,0 +1,67 @@
+.restaurant-decision { width: 100%; }
+.restaurant-decision__sheet {
+  position: fixed;
+  inset: 0;
+  width: calc(100% - 32px);
+  max-width: 420px;
+  max-height: 90vh;
+  max-height: 90dvh;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 24px;
+  background: #fff;
+  color: #171717;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-shadow: 0 -12px 48px rgba(0, 0, 0, .12);
+}
+.restaurant-decision__sheet[open] { animation: restaurant-decision-enter .28s cubic-bezier(.22, 1, .36, 1) both; }
+.restaurant-decision__sheet::backdrop { background: rgba(0, 0, 0, .42); }
+.restaurant-decision__content { padding: 24px 20px 20px; display: flex; flex-direction: column; gap: 12px; }
+.restaurant-decision__handle { width: 34px; height: 4px; background: #ddd; border-radius: 4px; margin: 0 auto 6px; }
+.restaurant-decision__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.restaurant-decision__header h2 { margin: 0 0 6px; font-size: 23px; font-weight: 700; letter-spacing: -.025em; }
+.restaurant-decision__header p { margin: 0; color: #666; font-size: 15px; overflow-wrap: anywhere; }
+.restaurant-decision__close { border: 0; border-radius: 50%; background: #f2f2f2; color: #171717; flex: 0 0 44px; height: 44px; }
+.restaurant-decision__content form { margin: 0; width: 100%; }
+.restaurant-decision__option { width: 100%; display: flex; align-items: center; gap: 14px; padding: 16px; border: 1px solid #ddd; border-radius: 16px; background: #fff; color: #171717; text-align: left; transition: transform .16s ease; }
+.restaurant-decision__option--primary { background: #171717; border-color: #171717; color: #fff; }
+.restaurant-decision__option > i:first-child { font-size: 20px; }
+.restaurant-decision__option > span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.restaurant-decision__option strong { font-size: 16px; }
+.restaurant-decision__option small { font-size: 13px; color: #666; }
+.restaurant-decision__option--primary small { color: #d1d1d1; }
+.restaurant-decision__option:active, .restaurant-decision__close:active { transform: scale(.98); }
+.restaurant-decision__note { color: #666; font-size: 12px; text-align: center; margin: 2px 0 0; }
+.restaurant-decision__cancel { border: 0; background: #f5f5f5; border-radius: 12px; color: #171717; font-weight: 600; min-height: 48px; }
+@keyframes restaurant-decision-enter { from { transform: translateY(10px) scale(.96); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .restaurant-decision__sheet[open] { animation: none; } .restaurant-decision__option { transition: none; } }
+
+// A one-shot celebration, shared by the host and guests.
+.confirmation-celebration {
+  position: fixed; inset: 0; margin: auto; width: calc(100% - 32px); max-width: 390px;
+  max-height: 90vh; max-height: 90dvh; padding: 0; border: 0; border-radius: 28px;
+  background: #fff; color: #171717; overflow: auto; text-align: center;
+  box-shadow: 0 24px 80px rgba(0,0,0,.22);
+}
+.confirmation-celebration::backdrop { background: rgba(0,0,0,.48); }
+.confirmation-celebration[open] { animation: celebration-enter .4s cubic-bezier(.2,.9,.3,1.15) both; }
+.confirmation-celebration__body { position: relative; padding: 30px 22px 20px; }
+.confirmation-celebration__check { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 16px; background: #171717; border-radius: 50%; font-size: 30px; color: #fff; }
+.confirmation-celebration h2 { font-size: 30px; font-weight: 800; letter-spacing: -.04em; margin: 0 0 6px; }
+.confirmation-celebration h3 { font-size: 21px; font-weight: 700; margin: 18px 0 6px; overflow-wrap: anywhere; }
+.confirmation-celebration p { color: #666; font-size: 14px; margin: 0 0 12px; overflow-wrap: anywhere; }
+.confirmation-celebration__photo { margin: 18px 0 0; }
+.confirmation-celebration__photo[hidden] { display: none; }
+.confirmation-celebration__photo img { width: 100%; height: 170px; object-fit: cover; border-radius: 16px; }
+.confirmation-celebration__photo figcaption { color: #666; font-size: 10px; margin-top: 4px; text-align: left; }
+.confirmation-celebration__photo figcaption a { color: inherit; }
+.confirmation-celebration__button { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 50px; margin: 20px 0 8px; background: #171717; color: #fff; border-radius: 15px; text-decoration: none; font-weight: 600; }
+.confirmation-celebration__button:hover { color: #fff; }
+.confirmation-celebration__dismiss { background: none; border: 0; min-height: 44px; width: 100%; color: #555; font-weight: 600; }
+.confirmation-celebration__confetti { position: absolute; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
+.confirmation-celebration__confetti span { position: absolute; left: 50%; top: 85px; width: 8px; height: 12px; border-radius: 2px; opacity: 0; animation: confetti-pop 1.35s var(--delay) cubic-bezier(.12,.68,.32,1) both; }
+@keyframes celebration-enter { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: scale(1); } }
+@keyframes confetti-pop { 0% { opacity: 1; transform: translate(0,0) rotate(0); } 65% { opacity: 1; transform: translate(var(--dx),var(--dy)) rotate(var(--spin)); } 100% { opacity: 0; transform: translate(var(--dx),calc(var(--dy) + 150px)) rotate(var(--spin)); } }
+@media (prefers-reduced-motion: reduce) { .confirmation-celebration[open], .confirmation-celebration__confetti span { animation: none; } }

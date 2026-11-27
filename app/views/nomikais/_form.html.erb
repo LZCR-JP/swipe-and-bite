@@ -3,7 +3,7 @@
     <% if @nomikai.errors.any? %>
       <div class="meeting-create__errors" role="alert"><%= @nomikai.errors.full_messages.join(" · ") %></div>
     <% end %>
-    <div class="meeting-create__map-wrap">
+    <div class="meeting-create__map-wrap" data-meeting-map-target="mapWrap">
       <div class="meeting-create__map" data-meeting-map-target="map"></div>
       <div class="meeting-create__pin" data-meeting-map-target="pin" hidden><i class="fa-solid fa-location-dot"></i></div>
       <div class="meeting-create__search">
@@ -15,8 +15,14 @@
       <%= f.hidden_field :longitude, data: { meeting_map_target: "longitude" } %>
     </div>
     <section class="meeting-create__sheet">
-      <div class="meeting-create__handle"></div>
-      <h1><%= @nomikai.persisted? ? "Edit gathering" : "Let's eat." %></h1>
+      <div class="meeting-create__drag" data-meeting-map-target="handle" role="slider" tabindex="0"
+           aria-label="Map size" aria-orientation="vertical" aria-valuemin="0" aria-valuemax="2" aria-valuenow="1" aria-valuetext="Balanced"
+           data-action="pointerdown->meeting-map#startSheetDrag pointermove->meeting-map#moveSheetDrag pointerup->meeting-map#endSheetDrag pointercancel->meeting-map#cancelSheetDrag lostpointercapture->meeting-map#cancelSheetDrag keydown->meeting-map#sheetKey">
+        <span class="meeting-create__handle" aria-hidden="true"></span>
+        <span class="meeting-create__drag-label" aria-hidden="true">Drag to resize</span>
+      </div>
+      <div class="meeting-create__sheet-content">
+      <h1><%= @nomikai.persisted? ? "Edit plan" : "Let's eat." %><% unless @nomikai.persisted? %> <span class="sb-emoji" aria-hidden="true">🍴</span><% end %></h1>
       <div class="meeting-create__location" role="status" aria-live="polite">
         <span class="meeting-create__location-icon"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></span>
         <div class="meeting-create__location-text">
@@ -29,7 +35,7 @@
         <% %w[lunch dinner].each do |meal| %>
           <label>
             <%= f.radio_button :meal_period, meal, required: true %>
-            <span><i class="fa-solid <%= meal == 'lunch' ? 'fa-sun' : 'fa-moon' %>"></i> <%= meal.capitalize %></span>
+            <span><b class="sb-emoji" aria-hidden="true"><%= meal == 'lunch' ? '☀️' : '🌙' %></b> <%= meal.capitalize %></span>
           </label>
         <% end %>
       </div>
@@ -45,7 +51,8 @@
         <div><strong>Budget per person</strong><small>JPY</small></div>
         <div class="meeting-create__budget">¥ <%= f.number_field :budget_per_person, min: 500, step: 1, placeholder: "Enter amount", required: true, aria: { label: "Budget per person in yen" }, inputmode: "numeric", data: { controller: "budget-input", action: "input->budget-input#format turbo:before-cache@document->budget-input#restore" } %></div>
       </div>
-      <%= f.submit(@nomikai.persisted? ? "Save changes" : "Create gathering", class: "meeting-create__submit") %>
+      <%= f.submit(@nomikai.persisted? ? "Save changes" : "Start plan", class: "meeting-create__submit") %>
+      </div>
     </section>
   <% end %>
 </div>

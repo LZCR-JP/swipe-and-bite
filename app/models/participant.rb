@@ -15,6 +15,10 @@ class Participant < ApplicationRecord
 
   after_create :accept_invitation, if: :invitation
 
+  def host?
+    user_id.present? && user_id == nomikai.user_id
+  end
+
   private
 
   def accept_invitation

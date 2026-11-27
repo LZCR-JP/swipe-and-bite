@@ -10,12 +10,12 @@
       <header class="swipe-page-header">
         <span class="swipe-page-header__eyebrow">YOUR GROUP’S VIBE</span>
         <div class="swipe-page-header__title-row">
-          <h1>Help your group choose a place</h1>
+          <h1>What are you craving? <span class="sb-emoji" aria-hidden="true">👀</span></h1>
           <button type="button" class="swipe-help-button" data-action="swipe-tutorial#open" aria-label="How swiping works" title="How swiping works">
             <i class="fa-solid fa-question" aria-hidden="true"></i>
           </button>
         </div>
-        <p class="swipe-instruction"><i class="fa-solid fa-arrows-left-right" aria-hidden="true"></i> Swipe right to like, left to pass — or use the buttons</p>
+        <p class="swipe-instruction"><i class="fa-solid fa-arrows-left-right" aria-hidden="true"></i> Right to like. Left to pass.</p>
         <%# <p>Swipe through food and restaurant styles. Your preferences help your organizer find real places the group will enjoy.</p> %>
       </header>
 
@@ -51,7 +51,7 @@
 
           <div class="swipe-card__content">
             <div class="swipe-card__tags">
-              <span class="swipe-card__type"><%= card_type %></span>
+              <span class="swipe-card__type"><span class="sb-emoji" aria-hidden="true"><%= { "food" => "🍽️", "people" => "🥂" }.fetch(card.image_type, "✨") %></span> <%= card_type %></span>
               <% if cuisine.present? %><span class="swipe-card__cuisine"><%= cuisine %></span><% end %>
             </div>
             <h2><%= card.title %></h2>
@@ -60,7 +60,7 @@
         </article>
       </div>
 
-      <%# <p class="swipe-instruction"><i class="fa-solid fa-arrows-left-right" aria-hidden="true"></i> Swipe right to like, left to pass — or use the buttons</p> %>
+      <%# <p class="swipe-instruction"><i class="fa-solid fa-arrows-left-right" aria-hidden="true"></i> Right to like. Left to pass.</p> %>
 
       <div class="swipe-buttons">
         <%= button_to participant_swipes_path(@participant.token), method: :post, params: { nomikai_vibe_card_id: @current_card.id, liked: false }, class: "swipe-action swipe-action--pass", data: { swipe_target: "dislikeButton" }, aria: { label: "Pass on #{card.title}" } do %>
@@ -77,8 +77,8 @@
     <section class="quick-entry quick-entry--finish">
       <span class="quick-entry__check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
       <p class="quick-entry__sub">Swipes complete!</p>
-      <h2>Any dietary restrictions?</h2>
-      <p class="quick-entry__sub">Only select what applies to you. You can finish without selecting anything.</p>
+      <h2>Any dietary restrictions? <span class="sb-emoji" aria-hidden="true">🥗</span></h2>
+      <p class="quick-entry__sub">Select any that apply, or skip straight to the finish.</p>
       <%= form_with url: finish_participant_swipes_path(@participant.token), method: :post, scope: :participant do |f| %>
         <fieldset class="quick-entry__choices">
           <legend class="visually-hidden">Dietary restrictions</legend>

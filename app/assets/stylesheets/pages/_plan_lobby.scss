@@ -1,0 +1,100 @@
+// Host lobby: invite and group progress are separate tasks.
+.host-lobby {
+  .plan-invite {
+    padding: 18px;
+    margin-top: 20px;
+    background: #fff;
+    border: 1px solid #e7e7e7;
+    border-radius: 22px;
+  }
+  .plan-invite__heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .plan-invite__share { margin-top: 16px; }
+  .plan-invite__button {
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    min-height: 50px; width: 100%; padding: 10px 14px; border: 0; border-radius: 14px;
+    background: #171717; color: white; font-weight: 700; font-size: 15px;
+  }
+  .plan-invite__divider { display: flex; align-items: center; gap: 12px; margin: 15px 0 10px; color: #737373; font-size: 12px; }
+  .plan-invite__divider::before, .plan-invite__divider::after { content: ""; flex: 1; height: 1px; background: #e9e9e9; }
+  .plan-invite__code { display: grid; grid-template-columns: minmax(0,1fr) 44px; gap: 6px 12px; align-items: center; padding: 12px 14px; border-radius: 14px; background: #f6f6f6; }
+  .plan-invite__code-text { display: grid; min-width: 0; gap: 3px; }
+  .plan-invite__code-text label { font-size: 11px; font-weight: 700; color: #666; }
+  .plan-invite__code-text small { font-size: 11px; color: #666; }
+  .plan-invite__code .host-lobby__code { font-size: 34px; letter-spacing: .16em; line-height: 1.05; }
+  .plan-invite__code .host-lobby__code--legacy { font-size: 17px; letter-spacing: .03em; }
+  .plan-invite__feedback { display: block; grid-column: 1 / -1; color: #555; font-size: 12px; }
+  .plan-invite__feedback:empty { display: none; }
+  .plan-invite__fallback { width: 100%; margin-top: 8px; padding: 9px; border-radius: 8px; border: 1px solid #ddd; font-size: 12px; }
+  .plan-crew { margin-top: 18px; padding: 18px; border: 1px solid #e7e7e7; border-radius: 22px; background: #fff; }
+  .plan-crew__avatars { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 18px 0 12px; }
+  .plan-crew__avatar {
+    position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%;
+    background: #f5f5f5; color: #555555; font-weight: 750; font-size: 15px;
+    &.is-empty { border: 1px dashed #c8c8c8; background: #fafafa; color: #949494; font-size: 14px; }
+    &.is-extra { background: #f3f3f3; color: #666; }
+    &.is-ready > i { position: absolute; right: -2px; bottom: -2px; display: grid; place-items: center; border: 2px solid #fff; border-radius: 50%; background: #287a43; color: #fff; width: 19px; height: 19px; font-size: 9px; }
+  }
+  .plan-crew__caption { text-align: center; margin: 0 0 20px; }
+  .plan-crew__caption strong { font-size: 14px; font-weight: 700; }
+  .plan-crew__caption p { font-size: 12px; }
+  .plan-crew__details { margin-top: 12px; }
+  .plan-crew__details summary { display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 13px; color: #555; list-style: none; padding: 6px 0; }
+  .plan-crew__details summary::-webkit-details-marker { display: none; }
+  .plan-actions { display: grid; gap: 10px; margin-top: 20px; text-align: center; }
+  .plan-actions form { margin: 0; }
+  .plan-actions p { margin: 0; font-size: 12px; }
+  .plan-actions__swipe { min-height: 50px; justify-content: center; background: #171717; color: #fff; border: none; border-radius: 14px; font-weight: 700; }
+  .plan-actions__swipe:hover { color: #fff; background: #333333; }
+  .plan-actions__done { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; color: #287a43; font-size: 13px; font-weight: 650; }
+  .plan-actions .host-lobby__primary:not(:disabled) { background: #171717; color: white; }
+  .plan-actions .host-lobby__primary:disabled { background: #f2f2f2; color: #686868; }
+}
+.participant-pick-card--waiting {
+  text-align: center;
+  padding: 28px 20px;
+  .plan-wait-art { display: flex; align-items: center; justify-content: center; padding: 12px 0 20px; }
+  .plan-wait-art > span { display: grid; place-items: center; width: 57px; height: 71px; border: 3px solid white; border-radius: 15px; background: #f5f5f5; color: #555555; font-size: 24px; box-shadow: 0 4px 16px #0001; }
+  .plan-wait-art > span:first-child { transform: rotate(-13deg) translateX(5px); }
+  .plan-wait-art > span:nth-child(2) { background: #171717; color: #fff; z-index: 1; transform: translateY(-8px); }
+  .plan-wait-art > span:last-child { transform: rotate(13deg) translateX(-5px); }
+  .plan-wait-indicator { display: inline-flex; align-items: center; gap: 4px; color: #555555; font-size: 12px; font-weight: 650; }
+  .plan-wait-indicator i { display: block; width: 6px; height: 6px; border-radius: 50%; background: #171717; }
+  .plan-wait-indicator span { margin-left: 4px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .plan-invite__button, .plan-actions__swipe { transition: transform 180ms cubic-bezier(.22,1,.36,1), background-color 180ms ease; }
+  .plan-invite__button:active, .plan-actions__swipe:active { transform: scale(.98); }
+  .plan-wait-art > span:nth-child(2) { animation: plan-card-float 2.8s ease-in-out infinite; }
+  .plan-wait-indicator i { animation: plan-dot 1.6s ease-in-out infinite; }
+  .plan-wait-indicator i:nth-child(2) { animation-delay: .18s; }
+  .plan-wait-indicator i:nth-child(3) { animation-delay: .36s; }
+}
+@keyframes plan-card-float { 0%,100% { transform: translateY(-8px); } 50% { transform: translateY(-13px); } }
+@keyframes plan-dot { 0%,100% { opacity: .4; } 50% { opacity: 1; } }
+
+// A simple share sheet only when the OS share sheet is unavailable.
+.host-lobby .invite-sheet {
+  position: fixed;
+  inset: auto 0 0;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 560px;
+  max-height: 85dvh;
+  padding: 0;
+  border: 0;
+  border-radius: 24px 24px 0 0;
+  background: #fff;
+  color: #171717;
+  box-shadow: 0 -8px 40px #0002;
+  &::backdrop { background: rgba(0,0,0,.35); }
+  .invite-sheet__content { padding: 12px 22px calc(24px + env(safe-area-inset-bottom)); }
+  .invite-sheet__handle { width: 32px; height: 4px; margin: 0 auto 12px; background: #ddd; border-radius: 5px; }
+  .invite-sheet__header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .invite-sheet__header h2 { margin: 0; }
+  .plan-invite__fallback { margin: 16px 0 12px; min-height: 44px; color: #171717; background: #f7f7f7; }
+  .plan-invite__feedback { margin-top: 8px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .host-lobby .invite-sheet[open] { animation: invite-sheet-in 220ms cubic-bezier(.22,1,.36,1) both; }
+}
+@keyframes invite-sheet-in { from { transform: translateY(24px); opacity: .5; } to { transform: translateY(0); opacity: 1; } }

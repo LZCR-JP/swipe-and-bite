@@ -7,10 +7,10 @@
       <span>JOIN · <%= @nomikai.formatted_join_code %></span>
     <% end %>
   </header>
-  <h1>Join the table.</h1>
-  <p class="quick-entry__sub">Is this your gathering?</p>
+  <h1>Join this plan?</h1>
+  <p class="quick-entry__sub">Check the details before you join.</p>
   <section class="quick-entry__card">
-    <h2><%= @nomikai.name %></h2>
+    <h2><%= plan_title(@nomikai) %></h2>
     <p class="quick-entry__sub">Hosted by <%= @nomikai.user.name %></p>
     <dl class="quick-entry__facts">
       <div><i class="fa-solid fa-location-dot" aria-hidden="true"></i><dt>Location</dt><dd>

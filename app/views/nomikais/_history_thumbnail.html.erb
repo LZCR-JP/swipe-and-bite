@@ -1,0 +1,6 @@
+<span class="<%= icon_class %><%= ' history-photo-thumb' if history_photo_available?(plan) %>">
+  <i class="fa-solid <%= fallback_icon %>" aria-hidden="true"<% if history_photo_available?(plan) %> data-history-photo-target="fallback"<% end %>></i>
+  <% if history_photo_available?(plan) %>
+    <img alt="" decoding="async" data-history-photo-target="image" hidden>
+  <% end %>
+</span>

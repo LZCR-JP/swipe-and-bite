@@ -1,0 +1,70 @@
+// New plan: a rounded, draggable sheet. The map remains interactive above it.
+.meeting-create {
+  min-height: 0;
+  &__form {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 78px - env(safe-area-inset-bottom));
+    height: calc(100dvh - 78px - env(safe-area-inset-bottom));
+    min-height: 420px;
+    overflow: hidden;
+  }
+  &__errors { flex: 0 0 auto; }
+  &__map-wrap { flex: 0 0 auto; height: var(--meeting-map-height, 36vh); }
+  // Reserve the overlap below the actual map so Google attribution stays visible.
+  &__map { height: calc(100% - 14px); }
+  &__pin { top: calc(50% - 7px); }
+  &__search { border-radius: 999px; top: 12px; left: 14px; right: 14px; }
+  &__search input { padding-left: 18px; }
+  &__search button { border-radius: 50%; margin: 3px; }
+  &__map-note { bottom: 40px; border-radius: 999px; }
+  &__sheet {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    margin-top: -14px;
+    z-index: 2;
+    border-radius: 32px 32px 0 0;
+    padding: 0;
+    box-shadow: 0 -4px 22px rgba(0, 0, 0, .07);
+  }
+  &__drag {
+    flex: 0 0 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 3px;
+    touch-action: none;
+    cursor: ns-resize;
+    user-select: none;
+    -webkit-user-select: none;
+    border-radius: 32px 32px 0 0;
+  }
+  &__handle { width: 42px; height: 5px; border-radius: 999px; margin: 0; background: #c7c7c7; }
+  &__drag-label { font-size: 10px; font-weight: 500; line-height: 1; color: #777; }
+  &__sheet-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    padding: 2px 20px 24px;
+  }
+  h1 { font-size: 29px; font-weight: 700; letter-spacing: -.035em; margin: 0 0 14px; }
+  &__location { border: 0; border-radius: 26px; background: #f5f5f5; margin-bottom: 12px; padding: 10px; }
+  &__location-icon { background: #fff; border-radius: 50%; }
+  &__location-text strong { font-weight: 600; }
+  &__meal { border-radius: 999px; margin-bottom: 5px; }
+  &__meal span { border-radius: 999px; font-weight: 600; }
+  &__meal input:checked + span { background: #171717; color: #fff; box-shadow: none; }
+  &__line { padding: 12px 0; }
+  &__line strong { font-weight: 600; }
+  &__stepper button { border-radius: 50%; }
+  &__budget input { border-radius: 999px; border: 0; padding-inline: 12px; }
+  &__submit { border-radius: 999px; font-weight: 600; margin-top: 14px; }
+
+}
+@media (max-width: 360px) {
+  .meeting-create__sheet-content { padding-inline: 14px; }
+}

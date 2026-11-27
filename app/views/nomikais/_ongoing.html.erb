@@ -1,12 +1,12 @@
 <% completed = gathering.participants.count { |participant| participant.completed_at.present? } %>
 <% total = [gathering.group_size.to_i, 1].max %>
 <section class="ongoing-card" data-controller="gathering-progress" data-gathering-progress-url-value="<%= progress_nomikai_path(gathering) %>">
-  <div class="gathering-status"><span class="gathering-status__dot"></span> Ongoing gathering</div>
-  <h2><%= gathering.name %></h2>
+  <div class="gathering-status"><span class="gathering-status__dot"></span> In progress</div>
+  <h2><%= plan_title(gathering) %></h2>
   <p><i class="fa-solid fa-location-dot" aria-hidden="true"></i> <%= gathering.area %> · <%= gathering.group_size %> people</p>
-  <div class="ongoing-card__progress-label"><span data-gathering-progress-target="label"><%= completed >= total ? "Ready to find matches" : "Waiting for responses" %></span><strong data-gathering-progress-target="count"><%= completed %> / <%= total %></strong></div>
+  <div class="ongoing-card__progress-label"><span data-gathering-progress-target="label"><%= gathering.matches_ready? ? (gathering.decision_state == "voting" ? "Waiting for votes" : "Choosing a restaurant") : completed >= total ? "Ready to find matches" : "Waiting for responses" %></span><strong data-gathering-progress-target="count"><%= completed %> / <%= total %></strong></div>
   <progress value="<%= [completed, total].min %>" max="<%= total %>" data-gathering-progress-target="bar" aria-label="Completed responses"></progress>
-  <div class="ongoing-card__code">Join code <strong><%= gathering.formatted_join_code %></strong></div>
-  <%= link_to nomikai_path(gathering), class: "ongoing-card__resume" do %>Continue gathering <i class="fa-solid fa-arrow-right" aria-hidden="true"></i><% end %>
-  <%= button_to "Cancel gathering", close_nomikai_path(gathering), method: :patch, class: "gathering-cancel", form: { data: { turbo_confirm: "Cancel this gathering? Your friends will no longer be able to join or swipe." } } %>
+  <% if gathering.collecting_swipes? %><div class="ongoing-card__code">Join code <strong><%= gathering.formatted_join_code %></strong></div><% end %>
+  <%= link_to nomikai_path(gathering), class: "ongoing-card__resume" do %>Open plan <i class="fa-solid fa-arrow-right" aria-hidden="true"></i><% end %>
+  <%= button_to "Cancel plan", close_nomikai_path(gathering), method: :patch, class: "gathering-cancel", form: { data: { turbo_confirm: "Cancel this gathering? Your friends will no longer be able to join or swipe." } } %>
 </section>

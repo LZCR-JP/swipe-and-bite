@@ -18,18 +18,18 @@ class SwipesController < ApplicationController
     ).first
 
     if @current_card.nil? && @participant.completed_at.present?
-      redirect_to swipe_return_path, status: :see_other
+      redirect_to completion_path, status: :see_other
     end
   end
 
   def create
     @nomikai.with_lock do
-      unless @nomikai.ongoing?
-        return redirect_to swipe_return_path, status: :see_other
+      unless @nomikai.collecting_swipes?
+        return redirect_to completion_path, status: :see_other
       end
 
       if @participant.reload.completed_at.present?
-        return redirect_to swipe_return_path, status: :see_other
+        return redirect_to completion_path, status: :see_other
       end
 
       card = @nomikai.nomikai_vibe_cards.find(
@@ -56,7 +56,7 @@ class SwipesController < ApplicationController
     finished = false
     @nomikai.with_lock do
       @participant.reload
-      if @nomikai.ongoing? && @nomikai.nomikai_vibe_cards.exists? &&
+      if @nomikai.collecting_swipes? && @nomikai.nomikai_vibe_cards.exists? &&
           !@nomikai.nomikai_vibe_cards.where.not(id: @participant.swipes.select(:nomikai_vibe_card_id)).exists?
         unless @participant.completed_at.present?
           preferences = params.fetch(:participant, ActionController::Parameters.new).permit(:non_drinker, restrictions: [])
@@ -70,11 +70,11 @@ class SwipesController < ApplicationController
       end
     end
     if finished
-      redirect_to swipe_return_path, status: :see_other
-    elsif @nomikai.ongoing?
+      redirect_to completion_path, status: :see_other
+    elsif @nomikai.collecting_swipes?
       redirect_to participant_swipes_path(@participant.token), status: :see_other
     else
-      redirect_to swipe_return_path, status: :see_other
+      redirect_to completion_path, status: :see_other
     end
   end
 
@@ -86,19 +86,20 @@ class SwipesController < ApplicationController
     )
 
     @nomikai = @participant.nomikai
+    if @participant.host?
+      return head :forbidden unless current_user && current_user.id == @nomikai.user_id
+    elsif current_user && current_user.id == @nomikai.user_id
+      return redirect_to nomikai_path(@nomikai), status: :see_other
+    end
   end
 
-  def swipe_return_path
-    organizer_participant = current_user&.id == @nomikai.user_id &&
-                          @participant.user_id == current_user.id
-    return nomikai_path(@nomikai) if organizer_participant
-
-    participant_path(@participant.token)
+  def completion_path
+    @participant.host? ? nomikai_path(@nomikai) : participant_path(@participant.token)
   end
 
   def ensure_open
-    return if @nomikai.ongoing?
+    return if @nomikai.collecting_swipes?
 
-    redirect_to swipe_return_path, status: :see_other
+    redirect_to completion_path, status: :see_other
   end
 end

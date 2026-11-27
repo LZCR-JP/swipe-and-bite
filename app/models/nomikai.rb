@@ -1,19 +1,54 @@
 class Nomikai < ApplicationRecord
   STATUSES = ["open", "closed"].freeze
 
-  scope :ongoing, -> { where(status: "open", matches_found_at: nil) }
-  scope :finished, -> { where.not(matches_found_at: nil) }
+  ACTIVE_DECISIONS = %w[pending voting rejected].freeze
+  scope :ongoing, -> { where(status: "open", decision_state: ACTIVE_DECISIONS) }
+  scope :finished, -> { where(decision_state: %w[confirmed legacy]) }
+  validates :decision_state, inclusion: { in: ACTIVE_DECISIONS + %w[confirmed legacy] }
 
   def ongoing?
-    status == "open" && matches_found_at.nil?
+    status == "open" && ACTIVE_DECISIONS.include?(decision_state)
   end
 
-  def finished?
+  def matches_ready?
     matches_found_at.present?
   end
 
+  def collecting_swipes?
+    ongoing? && !matches_ready?
+  end
+
+  def finished?
+    %w[confirmed legacy].include?(decision_state)
+  end
+
+  def confirmed?
+    decision_state == "confirmed"
+  end
+
   def restaurant_feedback_open?
-    finished? && candidates.where(selected: true).exists?
+    ongoing? && decision_state == "voting" && candidates.where(selected: true).exists?
+  end
+
+  def voting_participants
+    participants.where(user_id: nil).or(participants.where.not(user_id: user_id))
+  end
+
+  def all_votes_received?
+    selected = candidates.find_by(selected: true)
+    eligible = voting_participants
+    selected.present? && eligible.exists? &&
+      selected.candidate_votes.where(participant_id: eligible.select(:id)).count == eligible.count
+  end
+
+  def confirm_restaurant!
+    update!(decision_state: "confirmed", confirmed_at: Time.current, status: "closed")
+  end
+
+  def decision_signature
+    selected = candidates.find_by(selected: true)
+    votes = selected ? selected.candidate_votes.where(participant_id: voting_participants.select(:id)) : CandidateVote.none
+    [status, decision_state, decision_round, matches_found_at&.to_i, selected&.id, votes.count, votes.where(approved: true).count].join(":")
   end
 
   JOIN_CODE_PREFIX = "SWIPE".freeze
@@ -82,7 +117,7 @@ class Nomikai < ApplicationRecord
   end
 
   def accepting_participants?
-    status == "open" && (event_date.nil? || event_date.future?)
+    collecting_swipes? && (event_date.nil? || event_date.future?)
   end
 
   private
