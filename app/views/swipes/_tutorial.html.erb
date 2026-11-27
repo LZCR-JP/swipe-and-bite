@@ -1,0 +1,38 @@
+<dialog
+  class="swipe-tutorial"
+  data-swipe-tutorial-target="dialog"
+  data-action="click->swipe-tutorial#backdropClose cancel->swipe-tutorial#close:prevent"
+  aria-labelledby="swipe-tutorial-title"
+  aria-describedby="swipe-tutorial-hint">
+  <div class="swipe-tutorial__sheet">
+    <span class="swipe-tutorial__eyebrow">QUICK TIP</span>
+    <h2 id="swipe-tutorial-title">Swipe to vote</h2>
+    <p id="swipe-tutorial-hint" class="swipe-tutorial__hint">Your picks help the group find a place everyone likes.</p>
+
+    <div class="swipe-tutorial__demo" aria-hidden="true">
+      <div class="swipe-tutorial__demo-shadow"></div>
+      <div class="swipe-tutorial__demo-card">
+        <span class="swipe-tutorial__demo-stamp swipe-tutorial__demo-stamp--like">LIKE</span>
+        <span class="swipe-tutorial__demo-stamp swipe-tutorial__demo-stamp--nope">PASS</span>
+        <div class="swipe-tutorial__demo-image"><i class="fa-solid fa-utensils"></i></div>
+        <div class="swipe-tutorial__demo-lines"><span></span><span></span></div>
+      </div>
+      <i class="fa-solid fa-hand-pointer swipe-tutorial__demo-hand"></i>
+    </div>
+
+    <ul class="swipe-tutorial__legend">
+      <li>
+        <span class="swipe-tutorial__chip swipe-tutorial__chip--like"><i class="fa-solid fa-heart" aria-hidden="true"></i></span>
+        <span><strong>Swipe right</strong> or tap Like<br><small>I’d go here</small></span>
+      </li>
+      <li>
+        <span class="swipe-tutorial__chip swipe-tutorial__chip--pass"><i class="fa-solid fa-xmark" aria-hidden="true"></i></span>
+        <span><strong>Swipe left</strong> or tap Pass<br><small>Not for me</small></span>
+      </li>
+    </ul>
+
+    <button type="button" class="swipe-action swipe-action--like swipe-tutorial__cta" data-action="swipe-tutorial#close" autofocus>
+      Start swiping
+    </button>
+  </div>
+</dialog>
