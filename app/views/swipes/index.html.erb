@@ -6,10 +6,15 @@
     <% cuisine = card.cuisine.to_s.humanize unless card.cuisine.to_s.casecmp("unspecified").zero? %>
     <% card_type = { "food" => "FOOD IDEA", "people" => "GROUP MOMENT" }.fetch(card.image_type, "RESTAURANT ATMOSPHERE") %>
 
-    <main class="swipe-experience">
+    <main class="swipe-experience" data-controller="swipe-tutorial">
       <header class="swipe-page-header">
         <span class="swipe-page-header__eyebrow">YOUR GROUP’S VIBE</span>
-        <h1>Help your group choose a place</h1>
+        <div class="swipe-page-header__title-row">
+          <h1>Help your group choose a place</h1>
+          <button type="button" class="swipe-help-button" data-action="swipe-tutorial#open" aria-label="How swiping works" title="How swiping works">
+            <i class="fa-solid fa-question" aria-hidden="true"></i>
+          </button>
+        </div>
         <p class="swipe-instruction"><i class="fa-solid fa-arrows-left-right" aria-hidden="true"></i> Swipe right to like, left to pass — or use the buttons</p>
         <%# <p>Swipe through food and restaurant styles. Your preferences help your organizer find real places the group will enjoy.</p> %>
       </header>
@@ -65,6 +70,8 @@
           <i class="fa-solid fa-heart" aria-hidden="true"></i><span>Like</span>
         <% end %>
       </div>
+
+      <%= render "swipes/tutorial" %>
     </main>
   <% else %>
     <section class="quick-entry quick-entry--finish">

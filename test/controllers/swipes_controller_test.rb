@@ -16,6 +16,15 @@ class SwipesControllerTest < ActionDispatch::IntegrationTest
     assert_match "Any dietary restrictions", response.body
   end
 
+  test "swipe screen includes the tutorial and a replay button" do
+    get participant_swipes_path(@participant.token)
+    assert_response :success
+    assert_select "[data-controller~='swipe-tutorial']" do
+      assert_select "dialog.swipe-tutorial[data-swipe-tutorial-target='dialog']"
+      assert_select "button.swipe-help-button[data-action='swipe-tutorial#open']"
+    end
+  end
+
   test "finish cannot bypass the swipes" do
     post @finish_path
     assert_nil @participant.reload.completed_at
