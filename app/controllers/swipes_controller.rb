@@ -18,7 +18,7 @@ class SwipesController < ApplicationController
     ).first
 
     if @current_card.nil? && @participant.completed_at.present?
-      redirect_to completion_path
+      redirect_to completion_path, status: :see_other
     end
   end
 

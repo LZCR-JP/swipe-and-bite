@@ -17,6 +17,7 @@ Rails.application.routes.draw do
       get :confirmation_photo
       patch :close
       post :start_host_swipes
+      post :start_swipes, action: :start_host_swipes
       get "candidates/:candidate_id/decision", action: :candidate_decision, as: :candidate_decision
 
       get :recommendations,

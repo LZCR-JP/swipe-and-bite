@@ -189,6 +189,11 @@ export default class extends Controller {
 
   message(text) { this.statusTarget.textContent = text }
   showLocation(text) { this.locationNameTarget.textContent = text }
+  showLocationAccuracy(accuracy) {
+    if (!Number.isFinite(accuracy)) return
+    const meters = Math.max(1, Math.round(accuracy))
+    this.message(accuracy > 100 ? `Approximate location (about ${meters} m). Move the map to fine-tune.` : `Current location found (about ${meters} m accuracy).`)
+  }
   clearCoordinates() { this.latitudeTarget.value = ""; this.longitudeTarget.value = "" }
   samePoint(a, b) { return !!b && Math.abs(a.lat - b.lat) < 0.000001 && Math.abs(a.lng - b.lng) < 0.000001 }
 
@@ -228,7 +233,7 @@ export default class extends Controller {
     this.message(label === "Selected on map" ? "Pin set · area name unavailable" : "Meeting point set · move the map to change")
   }
 
-  async choosePin(point, move = false) {
+  async choosePin(point, move = false, accuracy = null) {
     const version = ++this.revision
     this.lastCenter = point
     this.pending = true
@@ -242,8 +247,12 @@ export default class extends Controller {
       const { results } = await this.geocoder.geocode({ location: point })
       if (!this.active || version !== this.revision) return
       this.choose(point, this.areaLabel(results) || "Selected on map")
+      this.showLocationAccuracy(accuracy)
     } catch (_) {
-      if (this.active && version === this.revision) this.choose(point, "Selected on map")
+      if (this.active && version === this.revision) {
+        this.choose(point, "Selected on map")
+        this.showLocationAccuracy(accuracy)
+      }
     }
   }
 
@@ -254,13 +263,16 @@ export default class extends Controller {
     this.message("Finding your location…")
     navigator.geolocation.getCurrentPosition(({ coords }) => {
       if (!this.active || version !== this.revision) return
-      this.choosePin({ lat: coords.latitude, lng: coords.longitude }, true)
+      const point = { lat: coords.latitude, lng: coords.longitude }
+      const accuracy = Number.isFinite(coords.accuracy) ? coords.accuracy : null
+      this.map.setZoom(accuracy === null || accuracy > 500 ? 15 : accuracy > 100 ? 16 : 18)
+      this.choosePin(point, true, accuracy)
     }, () => {
       if (this.active && version === this.revision) {
         this.pending = false
         this.message("Location unavailable. Search or move the map.")
       }
-    }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 })
+    }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 })
   }
 
   async search(event) {

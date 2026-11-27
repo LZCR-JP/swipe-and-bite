@@ -51,6 +51,11 @@ body:has(.meeting-create, .host-lobby, .gathering-hub) { background: $background
   h2 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -.35px; }
   p { margin: 4px 0 0; color: var(--sb-muted); font-size: 13px; }
   &__top, &__section-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  &__title-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  &__title-row h1 { flex: 1; min-width: 0; }
+  &__refresh { display: inline-flex; min-height: 40px; flex: 0 0 auto; align-items: center; justify-content: center; gap: 8px; padding: 0 14px; border: 1px solid var(--sb-line); border-radius: 999px; background: var(--sb-raised); color: var(--sb-text); font-size: 13px; font-weight: 650; text-decoration: none; white-space: nowrap; transition: color 160ms ease, background-color 160ms ease, transform 160ms ease; }
+  &__refresh:hover, &__refresh:focus-visible { color: var(--sb-accent); }
+  &__refresh:active { transform: scale(.96); }
   &__eyebrow { font-size: 13px; color: var(--sb-muted); font-weight: 600; }
   &__eyebrow i { margin-right: 4px; color: var(--sb-accent); }
   &__icon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--sb-surface); color: var(--sb-text); text-decoration: none; cursor: pointer; }
