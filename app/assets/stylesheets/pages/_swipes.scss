@@ -446,7 +446,28 @@
     line-height: 1.45;
   }
 
-  &__cta { width: 100%; }
+  &__cta {
+    display: flex;
+    width: 100%;
+    min-height: 52px;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 18px;
+    border: 0;
+    border-radius: 14px;
+    background: $brand-orange;
+    color: $background-white;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 750;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: transform 150ms ease, background-color 150ms ease;
+
+    &:hover { background: $brand-orange-hover; }
+    &:active { transform: scale(.98); }
+    &:focus-visible { outline: 2px solid $text-primary; outline-offset: 3px; }
+  }
 }
 
 /* Animated demo card */
@@ -621,6 +642,7 @@
   .swipe-tutorial__demo-card,
   .swipe-tutorial__demo-hand,
   .swipe-tutorial__demo-stamp { animation: none !important; }
+  .swipe-tutorial__cta { transition: none; }
 
   // Static fallback: show both outcomes side by side.
   .swipe-tutorial__demo-stamp { opacity: 1; }
