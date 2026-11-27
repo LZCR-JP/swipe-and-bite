@@ -18,18 +18,18 @@ class SwipesController < ApplicationController
     ).first
 
     if @current_card.nil? && @participant.completed_at.present?
-      redirect_to participant_path(@participant.token)
+      redirect_to swipe_return_path, status: :see_other
     end
   end
 
   def create
     @nomikai.with_lock do
       unless @nomikai.ongoing?
-        return redirect_to participant_path(@participant.token), status: :see_other
+        return redirect_to swipe_return_path, status: :see_other
       end
 
       if @participant.reload.completed_at.present?
-        return redirect_to participant_path(@participant.token), status: :see_other
+        return redirect_to swipe_return_path, status: :see_other
       end
 
       card = @nomikai.nomikai_vibe_cards.find(
@@ -70,11 +70,11 @@ class SwipesController < ApplicationController
       end
     end
     if finished
-      redirect_to participant_path(@participant.token), status: :see_other
+      redirect_to swipe_return_path, status: :see_other
     elsif @nomikai.ongoing?
       redirect_to participant_swipes_path(@participant.token), status: :see_other
     else
-      redirect_to participant_path(@participant.token), status: :see_other
+      redirect_to swipe_return_path, status: :see_other
     end
   end
 
@@ -88,9 +88,17 @@ class SwipesController < ApplicationController
     @nomikai = @participant.nomikai
   end
 
+  def swipe_return_path
+    organizer_participant = current_user&.id == @nomikai.user_id &&
+                          @participant.user_id == current_user.id
+    return nomikai_path(@nomikai) if organizer_participant
+
+    participant_path(@participant.token)
+  end
+
   def ensure_open
     return if @nomikai.ongoing?
 
-    redirect_to participant_path(@participant.token), status: :see_other
+    redirect_to swipe_return_path, status: :see_other
   end
 end
